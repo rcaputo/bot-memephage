@@ -6,15 +6,15 @@ clique
         description
 
 # url, title (from HTML)
-urls
+url
         sequence number
-        url
+        uri
         title
 
 # metadata for the urls
-urls-data
+url-data
         sequence number
-        urls.sequence
+        url.sequence
         title
         content-type
         content-size
@@ -24,7 +24,7 @@ urls-data
 link
         sequence number
         clique.sequence number
-        urls.sequence number
+        url.sequence number
         timestamp
 
 # individual ratings
@@ -71,7 +71,7 @@ user
 
 checkup
         sequence number
-        urls.sequence number
+        url.sequence number
         last check timestamp
         last check status
 
