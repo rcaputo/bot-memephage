@@ -1,6 +1,14 @@
 $Id$
 
 ----------
+2002-08-11
+----------
+
+devin: IRC.pm: Factor out logging, ignore many irc events.
+
+devin: Database/Postgres.pm: make a start at connecting to the DB
+
+----------
 2002-08-06
 ----------
 
