@@ -1,8 +1,8 @@
 # $Id$
 
-# Manage the link database (in a file).
+# Manage the link database (in Postgres).
 
-package Database::File;
+package Database::Postgres;
 
 use strict;
 use Exporter;
@@ -47,7 +47,7 @@ sub FORA          () { 14 }
 #------------------------------------------------------------------------------
 # Helper function to record links.
 
-use vars qw( %id_by_link %link_by_id $link_seq @recent $log_file );
+use vars qw( $dbh @recent );
 
 BEGIN {
   # Set up the database connection here, or something.
