@@ -10,6 +10,8 @@ url
         sequence number
         uri
 
+        unique: uri
+
 # metadata for the urls
 url-data
         sequence number
@@ -19,12 +21,17 @@ url-data
         content-size
         timestamp
 
+        # do we allow multiple instances of url metadata in the database?
+        unique ?: url.sequence
+
 # this way many cliques can share a single link
 link
         sequence number
         clique.sequence number
         url.sequence number
         timestamp
+
+        unique: clique.sequence + url.sequence
 
 # individual ratings
 rating
@@ -39,11 +46,17 @@ rate-link
         user.sequence number
         timestamp
 
+        # do we allow users multiple ratings per link?
+        unique ?: link.sequence + user.sequence
+
 # things like "not work safe" go here.
 keyword
         sequence number
+        clique.sequence number
         keyword
         definition
+
+        unique: clique.sequence + keyword
 
 # and are later bound to links
 keyword-link
@@ -51,6 +64,8 @@ keyword-link
         link.sequence number
         user.sequence number
         timestamp
+
+        unique: link.sequence
 
 note
         sequence number 
@@ -68,11 +83,15 @@ user
         add timestamp
         last use timestamp
 
+        unique: clique.sequence + login id
+
 checkup
         sequence number
         url.sequence number
         last check timestamp
         last check status
+
+        unique: url.sequence
 
 setup
         sequence number
@@ -80,9 +99,13 @@ setup
         setting value
         description
 
+        unique: setting name
+
 cookies
         sequence number
         domain
         cookie key
         cookie value
         expiration timestamp
+
+        unique: domain + cookie key
