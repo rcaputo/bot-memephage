@@ -81,7 +81,7 @@ foreach my $server (get_names_by_type('irc')) {
       map({$_ => sub {} } qw(irc_002 irc_003 irc_004 irc_005 irc_250 irc_251
 			     irc_254 irc_255 irc_265 irc_266 irc_301 irc_306
 			     irc_353 irc_366 irc_372 irc_375 irc_376
-			     irc_ctcp_ping irc_mode irc_join)),
+			     irc_ctcp_ping irc_mode irc_join irc_quit)),
 
       _default => sub {
         my ($state, $event, $args) = @_[STATE, ARG0, ARG1];
