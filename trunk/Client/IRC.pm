@@ -149,7 +149,7 @@ foreach my $server (get_names_by_type('irc')) {
 
       irc_socketerr => sub {
         my ($kernel, $error) = @_[KERNEL, ARG0];
-        print "Socket error occurred: $error\n";
+        print "IRC client ($server): socket error occurred: $error\n";
         $kernel->delay( connect => 60 );
       },
 
@@ -159,17 +159,32 @@ foreach my $server (get_names_by_type('irc')) {
         $where = $where->[0];
         print "<$who:$where> $msg\n";
 
-	my ($description, @links) = parse_link_from_message($msg);
-	$description = "(none)"
-	  unless defined $description and length $description;
+        soak_up_links($conf{logto}, $who, $msg);
+      },
 
-	foreach my $link (@links) {
-	  next unless defined $link and length $link;
-          get_link_id($conf{logto}, $who, $link, $description );
-        }
+      irc_private => sub {
+        my ($kernel, $who, $msg) = @_[KERNEL, ARG0, ARG2];
+
+        $who = (split /!/, $who)[0];
+        print "<$who:msg> $msg\n";
+
+        soak_up_links($conf{logto}, $who, $msg);
       },
     },
   );
+}
+
+sub soak_up_links {
+  my ($logto, $who, $msg) = @_;
+
+  my ($description, @links) = parse_link_from_message($msg);
+  $description = "(none)"
+    unless defined $description and length $description;
+
+  foreach my $link (@links) {
+    next unless defined $link and length $link;
+    get_link_id($logto, $who, $link, $description );
+  }
 }
 
 #------------------------------------------------------------------------------
