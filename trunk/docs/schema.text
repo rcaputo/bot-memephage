@@ -4,12 +4,13 @@
 clique
         sequence number
         description
-        timestamp
+        created
 
 # url, title (from HTML)
 url
         sequence number
         uri
+        created
 
         unique: uri
 
@@ -20,17 +21,17 @@ url-data
         title
         content-type
         content-size
-        timestamp
+        last-updated
 
         # someday we'll keep historical records of this often volatile data. 
-        # unique: url.sequence
+        unique: url.sequence
 
 # this way many cliques can share a single link
 link
         sequence number
         clique.sequence number
         url.sequence number
-        timestamp
+        created
 
         unique: clique.sequence + url.sequence
 
@@ -45,7 +46,7 @@ rate-link
         rating.sequence number
         link.sequence number
         user.sequence number
-        timestamp
+        created
 
         # users get one rating per link
         unique: link.sequence + user.sequence
@@ -62,42 +63,45 @@ keyword
 # and are later bound to links
 keyword-link
         sequence number
+        keyword.sequence number
         link.sequence number
         user.sequence number
-        timestamp
+        created
 
-        unique: link.sequence
+        unique: keyword.sequence + link.sequence
 
 note
         sequence number 
         subject
         body
-        timestamp
         link.sequence number
         user.sequence number
+        created
+
+        index: link.sequence
 
 user
         sequence number
         clique.sequence number
         login id
         password
-        add timestamp
-        last use timestamp
+        created timestamp
+        last-use timestamp
 
         unique: clique.sequence + login id
 
 checkup
         sequence number
         url.sequence number
-        last check timestamp
-        last check status
+        last-check timestamp
+        # last check status
 
         unique: url.sequence
 
 setup
         sequence number
-        setting name
-        setting value
+        setting-name
+        setting-value
         description
 
         unique: setting name
@@ -105,8 +109,8 @@ setup
 cookies
         sequence number
         domain
-        cookie key
-        cookie value
-        expiration timestamp
+        key
+        value
+        expires timestamp
 
-        unique: domain + cookie key
+        unique: domain + key
