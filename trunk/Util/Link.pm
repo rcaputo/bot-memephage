@@ -22,6 +22,7 @@ use vars qw(@ISA @EXPORT);
               link_set_status link_set_title link_set_meta_desc
               link_set_meta_keys link_set_head_time link_set_head_size
               link_set_head_type link_set_redirect
+              link_get_head_size
             );
 
 #------------------------------------------------------------------------------
@@ -420,6 +421,12 @@ sub link_set_head_time {
   my $link_rec = $link_by_id{$link_id};
   $link_rec->[PAGE_TIME] = $time;
   $link_rec->[CHECK_TIME] = time();
+}
+
+sub link_get_head_size {
+  my $link_id = shift;
+  my $link_rec = $link_by_id{$link_id};
+  return $link_rec->[PAGE_SIZE];
 }
 
 sub link_set_head_size {
