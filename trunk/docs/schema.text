@@ -1,9 +1,18 @@
 # $Id$
 
+clique
+        sequence number
+        description
+
 link
         sequence number
         url
         title
+
+clique-link
+        sequence number
+        clique.sequence number
+        link.sequence number
         timestamp
 
 rating
@@ -13,7 +22,7 @@ rating
 rate-link
         sequence number
         rating.sequence number
-        link.sequence number
+        clique-link.sequence number
         user.sequence number
         timestamp
 
@@ -22,9 +31,9 @@ keyword
         keyword
         definition
 
-keword-link
+keyword-link
         sequence number
-        link.sequence number
+        clique-link.sequence number
         user.sequence number
         timestamp
 
@@ -33,11 +42,12 @@ note
         subject
         body
         timestamp
-        link.sequence number
+        clique-link.sequence number
         user.sequence number
 
 user
         sequence number
+        clique.sequence number
         login id
         password
         add timestamp
