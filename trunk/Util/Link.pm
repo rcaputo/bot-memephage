@@ -170,11 +170,11 @@ sub get_link_by_id {
 
 sub get_stale_links {
   my $age = shift;
+  my $now = time();
   my @stale =
     ( sort { $link_by_id{$b}->[TIME] <=> $link_by_id{$a}->[TIME] }
-      grep { ( defined($link_by_id{$_}->[CHECK_TIME]) and
-	       ((time() - $link_by_id{$_}->[CHECK_TIME]) >= $age)
-	     )
+      grep { my $check_time = $link_by_id{$_}->[CHECK_TIME];
+             defined($check_time) and (($now - $check_time) >= $age)
 	   } keys %link_by_id
     );
   return @stale;
