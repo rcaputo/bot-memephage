@@ -66,9 +66,9 @@ sub html_encode {
   $data =~ s{&}{&amp;}gso;
   $data =~ s{<}{&lt;}gso;
   $data =~ s{>}{&gt;}gso;
-  $data =~ s{"}{&quot;}gso;
+  $data =~ s{\"}{&quot;}gso;
   # XXX: these bits are necessary for Latin charsets only, which is us.
-  $data =~ s{'}{&#39;}gso;  
+  $data =~ s{\'}{&#39;}gso;
   $data =~ s{\x8b}{&#139;}gso;
   $data =~ s{\x9b}{&#155;}gso;
   return $data;
