@@ -36,10 +36,17 @@ macro table_header (<header>) {
 
 # Start an HTTPD session.
 sub httpd_session_started {
-  my ($heap, $socket, $address, $port) = @_[HEAP, ARG0..ARG2];
+  my ( $heap,
+       $socket, $remote_address, $remote_port,
+       $my_name, $my_host, $my_port
+     ) = @_[HEAP, ARG0..ARG5];
 
-  $heap->{remote_addr} = inet_ntoa($address);
-  $heap->{remote_port} = $port;
+  $heap->{my_host} = $my_host;
+  $heap->{my_port} = $my_port;
+  $heap->{my_name} = $my_name;
+
+  $heap->{remote_addr} = inet_ntoa($remote_address);
+  $heap->{remote_port} = $remote_port;
 
   $heap->{wheel} = new POE::Wheel::ReadWrite
     ( Handle       => $socket,
@@ -94,9 +101,9 @@ sub httpd_session_got_query {
 
   my $url = $request->url() . '';
 
-  ### Storter link.
+  ### Starter link.
 
-  if ($url =~ m{^/link/(\d+)}) {
+  if ($url =~ /^\/link\/(\d+)/) {
 
     my $big_link = get_link($1);
     if (defined $big_link) {
@@ -121,9 +128,51 @@ sub httpd_session_got_query {
     return;
   }
 
+  ### Add a link via the web.  For example, via a javascript bookmark.
+
+  if ($url =~ /^\/add\?(.+?)\s*$/) {
+    my $link = $1;
+
+    my $response = HTTP::Response->new(200);
+    $response->push_header( 'Content-type', 'text/html' );
+
+    if ($link =~ s/(http:\/\/\S*)/$1/) {
+      get_link_id( "web", "$heap->{remote_addr}:$heap->{remote_port}",
+                   $1, "[link]"
+                 );
+
+      $response->content
+        ( "<html><head><title>$heap->{my_name} thanks you</title></head>" .
+          "<body>" .
+          "<p>" .
+          "Thanks for submitting <tt>$link</tt> to " .
+          "<a href='/'>$heap->{my_name}</a>." .
+          "</p>" .
+          "</body>" .
+          "</html>"
+        );
+    }
+    else {
+      $response->content
+        ( "<html><head><title>$heap->{my_name} thanks you</title></head>" .
+          "<body>" .
+          "<p>" .
+          "Thanks for submitting <tt>$link</tt> to " .
+          "<a href='/'>$heap->{my_name}</a>.  However, it cannot accept " .
+          "this type of link at this time." .
+          "</p>" .
+          "</body>" .
+          "</html>"
+        );
+    }
+
+    $heap->{wheel}->put( $response );
+    return;
+  }
+
   ### New since TIME.
 
-  if ($url =~ m{^/since(?:/(\d+))}) {
+  if ($url =~ /^\/since(?:\/(\d+))/) {
     my $oldest_time = $1;
     my $min_time = time() - 3600;
     $oldest_time = $min_time unless defined $oldest_time;
@@ -140,7 +189,7 @@ sub httpd_session_got_query {
 
   ### Recent N.
 
-  if ($url =~ m{^/recent(?:/(\d+))?}) {
+  if ($url =~ /^\/recent(?:\/(\d+))?/) {
     my $max_links = $1;
     $max_links = 10 unless defined $max_links;
     $max_links = 100 if $max_links > 100;
@@ -161,7 +210,7 @@ sub httpd_session_got_query {
     $response->push_header( 'Content-type', 'text/html' );
 
     $response->content
-      ( "<html><head><title>memephage main menu</title></head>" .
+      ( "<html><head><title>$heap->{my_name} main menu</title></head>" .
         "<body>" .
         "<ul>" .
         "<li><a href='/recent/5'>Five most recent links</a>" .
@@ -170,7 +219,19 @@ sub httpd_session_got_query {
         "<li><a href='/recent/50'>Fifty most recent links</a>" .
         "<li><a href='/recent/100'>Hundred most recent links</a>" .
 	"<li><a href='/since/'>Links from the last hour</a>" .
-        "</ul>"
+        "</ul>" .
+        "<p>" .
+        "To make submissions easier, this javascript link will add " .
+        "whatever page is currently visible in your browser.  If your " .
+        "browser supports it, the confirmation page will appear in a " .
+        "new window." .
+        "</p>" .
+        "<a href=\"javascript:void(window.open('http://" .
+        "$heap->{my_host}:$heap->{my_port}/add?'+location.href))" .
+        "\">" .
+        "Send link to $heap->{my_name}</a>." .
+        "</p>" .
+        "It's really convenient as a bookmark, especially in a toolbar."
       );
 
     $heap->{wheel}->put( $response );
@@ -271,7 +332,7 @@ foreach my $server (get_names_by_type(WEBLOG_TYPE)) {
             got_flush => \&httpd_session_flushed,
             got_query => \&httpd_session_got_query,
             got_error => \&httpd_session_got_error,
-            [ @_[ARG0..ARG2] ],
+            [ @_[ARG0..ARG2], $server, $conf{iface}, $conf{port} ],
           );
       },
     );
