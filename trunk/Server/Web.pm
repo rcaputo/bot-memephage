@@ -38,13 +38,13 @@ macro table_header (<header>) {
 sub httpd_session_started {
   my ( $heap,
        $socket, $remote_address, $remote_port,
-       $my_name, $my_host, $my_port, $my_iface
+       $my_name, $my_host, $my_port, $my_ifname
      ) = @_[HEAP, ARG0..ARG6];
 
   $heap->{my_host} = $my_host;
   $heap->{my_port} = $my_port;
   $heap->{my_name} = $my_name;
-  $heap->{my_ifac} = $my_iface;
+  $heap->{my_inam} = $my_ifname;
 
   $heap->{remote_addr} = inet_ntoa($remote_address);
   $heap->{remote_port} = $remote_port;
@@ -239,7 +239,7 @@ sub httpd_session_got_query {
         "new window." .
         "</p>" .
         "<a href=\"javascript:void(window.open('http://" .
-        "$heap->{my_ifac}:$heap->{my_port}/add?'+location.href))" .
+        "$heap->{my_inam}:$heap->{my_port}/add?'+location.href))" .
         "\">" .
         "Send link to $heap->{my_name}</a>." .
         "</p>" .
@@ -345,7 +345,7 @@ foreach my $server (get_names_by_type(WEBLOG_TYPE)) {
             got_query => \&httpd_session_got_query,
             got_error => \&httpd_session_got_error,
             [ @_[ARG0..ARG2], $server,
-              $conf{iface}, $conf{port}, $conf{iface},
+              $conf{iface}, $conf{port}, $conf{ifname},
             ],
           );
       },
