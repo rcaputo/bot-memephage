@@ -4,7 +4,7 @@ It will create a links.list file in the current directory.  That file
 will be read entirely into memory at startup, and it won't be touched
 again until the bot shuts down.
 
-[coral]: In the near future, this will all be tied through DBI.
+[coral]: In the near future, this will all be tied through Postgres.
 
 rcc: Fixed the path for links.list.  Duh.
 coral: schema.text is in cvs and will be postgres-ized someday.
