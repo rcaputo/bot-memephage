@@ -263,7 +263,7 @@ sub get_link_as_table_row {
 
       "<tr>" .
       "<th align=left valign=top width='1%'>Link:</th>" .
-      "<td width='99%'><a href='$link->[LINK]'>$link->[LINK]</a><td>" .
+      "<td width='99%'><a href='$link->[LINK]'>".html_encode($link->[LINK])."</a><td>" .
       "</tr>"
     );
 
@@ -272,7 +272,7 @@ sub get_link_as_table_row {
       ( "<tr>" .
         "<th align=left valign=top width='1%'>Really:</th>" .
         ( "<td width='99%'>" .
-          "<a href='$link->[REDIRECT]'>$link->[REDIRECT]</a>" .
+          "<a href='$link->[REDIRECT]'>".html_encode($link->[REDIRECT])."</a>" .
           "<td>"
         ) .
         "</tr>"
@@ -295,7 +295,7 @@ sub get_link_as_table_row {
     $html .=
       ( "<tr>" .
         "<th align=left valign=top width='1%'>Context:</th>" .
-        "<td width='99%'>$link->[DESC]</td>" .
+        "<td width='99%'>".html_encode($link->[DESC])."</td>" .
         "</tr>"
       );
   }
@@ -303,7 +303,7 @@ sub get_link_as_table_row {
   if (defined $link->[PAGE_TITLE] and length $link->[PAGE_TITLE]) {
     $html .= ( "<tr>" .
                "<th align=left valign=top width='1%'>Title:</th>" .
-               "<td width='99%'>$link->[PAGE_TITLE]</td>" .
+               "<td width='99%'>".html_encode($link->[PAGE_TITLE])."</td>" .
                "</tr>"
              );
   }
@@ -311,7 +311,7 @@ sub get_link_as_table_row {
   if (defined $link->[PAGE_DESC] and length $link->[PAGE_DESC]) {
     $html .= ( "<tr>" .
                "<th align=left valign=top width='1%'>Description:</th>" .
-               "<td width='99%'>$link->[PAGE_DESC]</td>" .
+               "<td width='99%'>".html_encode($link->[PAGE_DESC])."</td>" .
                "</tr>"
              );
   }
@@ -319,7 +319,7 @@ sub get_link_as_table_row {
   if (defined $link->[PAGE_KEYS] and length $link->[PAGE_KEYS]) {
     $html .= ( "<tr>" .
                "<th align=left valign=top width='1%'>Keywords:</th>" .
-               "<td width='99%'>$link->[PAGE_KEYS]</td>" .
+               "<td width='99%'>".html_encode($link->[PAGE_KEYS])."</td>" .
                "</tr>"
              );
   }
