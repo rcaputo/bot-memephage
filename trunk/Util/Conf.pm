@@ -73,7 +73,7 @@ sub flush_section {
   }
 }
 
-open(MPH, "</home/memephage/bot/memephage.conf") or die $!;
+open(MPH, "<./memephage.conf") or die $!;
 while (<MPH>) {
   chomp;
   s/\s*\#.*$//;
