@@ -1,9 +1,19 @@
 #!perl
 
+# $Id$
 use strict;
 
-http://64.53.6.49:8888/email
+# the submission url to use
+my $url = 'http://64.53.6.49:8888/post';
 
-LWP::UserAgent->new->post($url, message => $msg)
+# we need <> to return a scalar here
+local $/;
 
-<TorgoX> coral -- so you want to do like:  die "WHAAT? ", $response->status_line unless $response->is_success;   print "Whee, I got ", $response->content, "\n";
+# and here we post the entirety of STDIN to memephage
+my $response = LWP::UserAgent->new->post($url, message => <>);
+
+# explode if the post failed for some reason
+die "FAILURE!" unless $response->is_success;
+
+# ah, the sweet taste of success. give the shell a true return code.
+exit 0;
