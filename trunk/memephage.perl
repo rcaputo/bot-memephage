@@ -1,7 +1,15 @@
 #!/usr/bin/perl -w
 
 use strict;
+
+# For dmitri.
 use lib '/home/rcc/lib';
+
+# For home.
+use lib '/home/troc/perl/poe';
+use lib '/home/troc/perl/poco/client-http/blib/lib';
+use lib '/home/troc/perl/poco/client-dns/blib/lib';
+use lib '/home/troc/perl/poco/jobqueue/blib/lib';
 
 use POE::Kernel;
 use POE::Wheel::SocketFactory;
