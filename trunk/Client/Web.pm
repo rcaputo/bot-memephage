@@ -198,7 +198,7 @@ sub check_got_head {
   }
   else {
     # HEAD 405: Method Not Allowed.  We'll try GET anyway.
-    return unless $heap->code() == 405;
+    return unless $response->code() == 405;
   }
 
   # Try to fetch more information from the page's headers.
