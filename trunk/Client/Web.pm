@@ -36,7 +36,7 @@ sub MAX_FRESH_AGE  () { 3600 * 24 * 7 }  # seconds between link recheckes
 
 POE::Component::Client::DNS->spawn
   ( Alias   => 'resolver',
-    Timeout => 60,
+    Timeout => 30,
   );
 
 # Fetch HTTP requests.
