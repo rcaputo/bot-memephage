@@ -172,24 +172,27 @@ sub httpd_session_got_query {
   } 
 
   if ($url =~ /^\/post$/) {
-    my $response = HTTP::Response->new(200);
-    my $content = $request->content;
-    $content =~ tr/+/ /;
-    $content =~ s/%([a-fA-F0-9]{2})/pack("C", hex($1))/eg;
-    $content =~ s/^\w+=//;
-    my ($description, @links) = parse_link_from_message($content);
-    $description = "(none)"
-      unless defined $description and length $description;
 
+    # spawn off a session to do the actual parsing
     $_[KERNEL]->yield( do => sub {
-      foreach my $link (@_[ARG1..$#_]) {
+      my $content = $_[ARG0];
+      $content =~ tr/+/ /;
+      $content =~ s/%([a-fA-F0-9]{2})/pack("C", hex($1))/eg;
+      $content =~ s/^\w+=//;
+      my ($description, @links) = parse_link_from_message($content);
+      $description = "(none)"
+        unless defined $description and length $description;
+
+      foreach my $link (@links) {
         next unless defined $link and length $link;
+        # spawn off a session to do the actual link fetching
         $_[KERNEL]->yield( do => sub {
           get_link_id("web", @_[ARG0..ARG1], "[email]");
-        }, $_[ARG0], $link );
+        }, $_[ARG1], $link );
       }
-    }, "$heap->{remote_addr}:$heap->{remote_port}", @links );
+    }, $request->content, "$heap->{remote_addr}:$heap->{remote_port}" );
 
+    my $response = HTTP::Response->new(200);
     $response->content(
       'Thanks!'
     );
