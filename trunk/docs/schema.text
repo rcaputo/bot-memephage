@@ -1,39 +1,55 @@
 # $Id$
 
+# to each their own.
 clique
         sequence number
         description
 
-link
+# url, title (from HTML)
+urls
         sequence number
         url
         title
 
-clique-link
+# metadata for the urls
+urls-data
         sequence number
-        clique.sequence number
-        link.sequence number
+        urls.sequence
+        title
+        content-type
+        content-size
         timestamp
 
+# this way many cliques can share a single link
+link
+        sequence number
+        clique.sequence number
+        urls.sequence number
+        timestamp
+
+# individual ratings
 rating
         sequence number
         rate
 
+# and the user and link they're bound to
 rate-link
         sequence number
         rating.sequence number
-        clique-link.sequence number
+        link.sequence number
         user.sequence number
         timestamp
 
+# things like "not work safe" go here.
 keyword
         sequence number
         keyword
         definition
 
+# and are later bound to links
 keyword-link
         sequence number
-        clique-link.sequence number
+        link.sequence number
         user.sequence number
         timestamp
 
@@ -42,7 +58,7 @@ note
         subject
         body
         timestamp
-        clique-link.sequence number
+        link.sequence number
         user.sequence number
 
 user
