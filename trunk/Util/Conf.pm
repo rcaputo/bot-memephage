@@ -35,11 +35,11 @@ my %define =
       port    => SCALAR | REQUIRED,
       login   => SCALAR,
       passwd  => SCALAR,
-      logfile => SCALAR | REQUIRED,
     },
     database =>
     { name    => SCALAR | REQUIRED,
       type    => SCALAR | REQUIRED,
+      dbname  => SCALAR | REQUIRED,
     },
     irc =>
     { name    => SCALAR | REQUIRED,

@@ -54,7 +54,8 @@ sub FORA          () { 14 }
 use vars qw( %id_by_link %link_by_id $link_seq @recent $log_file );
 
 BEGIN {
-  $log_file = './links.list';
+  my %conf  = get_items_by_name('db');
+  $log_file = $conf{dbname};
 
   unless (-e $log_file) {
     open LOG_FILE, ">$log_file" or die "can't create $log_file: $!";

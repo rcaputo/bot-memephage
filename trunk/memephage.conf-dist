@@ -15,6 +15,7 @@ database
         # but other types are planned.
 
 	type	File
+	dbname	./links.list
 
 # Define a web log.  Each log is actually a separate server, with a
 # different host and/or port address.
@@ -47,12 +48,6 @@ weblog
 
 	login	memephage
 	passwd	noroboto
-
-        # The flat file where links will be stored.  Eventually this
-        # should move to a "database" section and be replaced with the
-        # proper database's internal code name.
-
-	logfile ./links.list
 
 # Define an IRC client.  Each "irc" section defines another client
 # that memephage uses to connect to a network.  Each client may listen
