@@ -61,8 +61,8 @@ POE::Component::JobQueue->spawn
     {
     },
     Worker      => sub {
-      my ($postback, $link) = @_;
-      DEBUG and warn "spawning a worker to handle <$link>\n";
+      my ($postback, $link_id) = @_;
+      DEBUG and warn "spawning a worker to handle link \#$link_id";
       POE::Session->create
         ( inline_states =>
           { _start   => \&check_start,
@@ -70,14 +70,16 @@ POE::Component::JobQueue->spawn
             got_head => \&check_got_head,
             got_body => \&check_got_body,
           },
-          args => [ $postback, $link ]
+          args => [ $postback, $link_id ]
         );
     },
   );
 
 sub check_start {
-  my ($kernel, $heap, $postback, $link) = @_[KERNEL, HEAP, ARG0, ARG1];
+  my ($kernel, $heap, $postback, $link_id) = @_[KERNEL, HEAP, ARG0, ARG1];
+  my $link = get_link_by_id($link_id);
 
+  $heap->{link_id}  = $link_id;
   $heap->{link}     = $link;
   $heap->{redirect} = $link;
   $heap->{postback} = $postback;
@@ -88,7 +90,7 @@ sub check_start {
 
   my ($host) = ($link =~ m{//([^:/]+)});
   unless (defined $host) {
-    link_set_status( $link, "Could not determine hostname to resolve." );
+    link_set_status( $link_id, "Could not determine hostname to resolve." );
     return;
   }
 
@@ -102,12 +104,12 @@ sub check_got_name {
   my ($response_packet, $response_error) = @{$_[ARG1]};
 
   unless (defined $response_packet) {
-    link_set_status( $heap->{link}, "Resolver error: $response_error" );
+    link_set_status( $heap->{link_id}, "Resolver error: $response_error" );
     return;
   }
 
   DEBUG and warn "host for <$heap->{link}> resolved ok\n";
-  link_set_status( $heap->{link}, "Host resolved ok." );
+  link_set_status( $heap->{link_id}, "Host resolved ok." );
 
   # Build a HEAD request.
   my $head_request = HTTP::Request->new( HEAD => $heap->{link} );
@@ -127,9 +129,10 @@ sub check_got_head {
   my $response = $_[ARG1]->[0];
 
   my $link = $heap->{link};
+  my $link_id = $heap->{link_id};
 
   if (defined $response) {
-    link_set_status( $link, "HEAD " .
+    link_set_status( $link_id, "HEAD " .
                      ( defined($response->code())
                        ? $response->code()
                        : "(undef)"
@@ -164,7 +167,7 @@ sub check_got_head {
     $heap->{redirect} = $location;
     $heap->{loop}->{$location} = 1;
 
-    link_set_redirect($link, $location);
+    link_set_redirect($link_id, $location);
 
     DEBUG and warn "redirecting from <$heap->{link}> to <$location>\n";
 
@@ -181,19 +184,19 @@ sub check_got_head {
   my $size = "(unknown)";
   if ($response->is_success()) {
     if (defined $response->last_modified()) {
-      link_set_head_time($link, str2time($response->date(), 'GMT'));
+      link_set_head_time($link_id, str2time($response->date(), 'GMT'));
     }
 
     $type = $response->content_type();
     $type = 'text/guessed' unless defined $type;
-    link_set_head_type($link, $type);
+    link_set_head_type($link_id, $type);
 
     $size = $response->content_length();
     $size = '(unknown)' unless defined $size;
-    link_set_head_size($link, $size);
+    link_set_head_size($link_id, $size);
 
     if (defined $response->title()) {
-      link_set_title($link, $response->title());
+      link_set_title($link_id, $response->title());
     }
   }
 
@@ -219,8 +222,9 @@ sub check_got_body {
   my $response = $_[ARG1]->[0];
 
   my $link = $heap->{link};
+  my $link_id = $heap->{link_id};
 
-  link_set_status( $link, "GET " .
+  link_set_status( $link_id, "GET " .
                    ( defined($response->code())
                      ? $response->code()
                      : "(undef)"
@@ -240,25 +244,25 @@ sub check_got_body {
   DEBUG and warn "BODY fetch is successful for <$heap->{redirect}>\n";
 
   if (defined $response->last_modified()) {
-    link_set_head_time($link, str2time($response->date(), 'GMT'));
+    link_set_head_time($link_id, str2time($response->date(), 'GMT'));
   }
 
   my $type = $response->content_type();
   $type = 'text/guessed' unless defined $type;
-  link_set_head_type($link, $response->content_type());
+  link_set_head_type($link_id, $response->content_type());
 
   my $size = $response->content_length();
   $size = "(unknown)" unless defined $size;
-  link_set_head_size($link, $response->content_length());
+  link_set_head_size($link_id, $response->content_length());
 
   if (defined $response->title()) {
-    link_set_title($link, $response->title());
+    link_set_title($link_id, $response->title());
   }
 
   my $redirect = $heap->{redirect};
 
   if ($link ne $redirect) {
-    link_set_redirect($link, $redirect);
+    link_set_redirect($link_id, $redirect);
   }
 
   # Rocco should probably be shot for parsing HTML with regular
@@ -269,19 +273,19 @@ sub check_got_body {
     $content =~ s/\s+/ /g;
 
     if ($content =~ m{< *title *> *(.+?) *< */ *title *>}i) {
-      link_set_title($link, $1);
+      link_set_title($link_id, $1);
     }
 
     if ( $content =~
 	 m{< *meta *name *= *"description" *content *= *\" *([^\"<>]+) *\" *>}i
        ) {
-      link_set_meta_desc($link, $1);
+      link_set_meta_desc($link_id, $1);
     }
 
     if ( $content =~
 	 m{< *meta *name *= *"keywords" *content *= *\" *([^\"<>]+) *\" *>}i
        ) {
-      link_set_meta_keys($link, $1);
+      link_set_meta_keys($link_id, $1);
     }
   }
 }
@@ -292,58 +296,57 @@ sub check_got_body {
 
 POE::Session->new
   ( _start => sub {
-      my $heap = $_[HEAP];
+      my ($kernel, $heap) = @_[KERNEL, HEAP];
       $heap->{pending} = { };
 
       # Gather unchecked links.
+
       my @unchecked = get_unchecked_links();
-      foreach (@unchecked) {
-	$heap->{pending}->{$_} = 1;
+      foreach my $link_id (@unchecked) {
+        unless (exists $heap->{pending}->{$link_id}) {
+          $heap->{pending}->{$link_id} = 1;
+          $kernel->post( linkchecker => enqueue => got_response =>
+                         $link_id,
+                       );
+        }
       }
 
       # Add stale links into the mix.
-      $_[KERNEL]->yield( 'check_stale' );
+      
+      $kernel->yield( 'check_stale' );
     },
 
-    # Run a stale-link check.
-
-    check => sub {
-      my $heap = $_[HEAP];
-
-      # Gather pending links to check, and clear the pending buffer.
-      my @pending = keys %{$heap->{pending}};
-      $heap->{pending} = { };
-
-      # Enqueue a check task for each.
-      foreach (@pending) {
-        $_[KERNEL]->post( linkchecker => enqueue =>
-                          ignore_response => get_link_by_id($_)
-                        );
-      }
-
-      # Check for stale links again in a little while.
-      $_[KERNEL]->delay( check_stale => CHECK_PERIOD );
-    },
-
-    # Periodically check stale links.  -><- We should not add links to
-    # $heap->{pending} if they're already in the queue.  Otherwise the
-    # queue may expand faster than links can be checked.
+    # Periodically check stale links.  This and the got_response state
+    # manage a hash of pending links so that links aren't checked more
+    # than necessary if the queue is running slowly.
 
     check_stale => sub {
-      my $heap = $_[HEAP];
+      my ($kernel, $heap) = @_[KERNEL, HEAP];
 
       # Gather stale links (older than MAX_FRESH_AGE).
+
       my @stale = get_stale_links( MAX_FRESH_AGE );
-      foreach (@stale) {
-	$heap->{pending}->{$_} = 1;
+      foreach my $link_id (@stale) {
+        unless (exists $heap->{pending}->{$link_id}) {
+	  $heap->{pending}->{$link_id} = 1;
+          $kernel->post( linkchecker => enqueue => got_response =>
+                         $link_id,
+                       );
+        }
       }
 
-      # Do the actual check.
-      $_[KERNEL]->yield( 'check' );
+      # Go around again in a little while.
+      $kernel->delay( check_stale => CHECK_PERIOD );
     },
 
-    # Ignore whatever linkchecker sends back to us.
-    ignore_response => sub {
+    # When linkchecker returns us a response, the query parameter is
+    # the ID of the link we asked it to check.  Delete that from the
+    # pending hash.
+
+    got_response => sub {
+      my $heap = $_[HEAP];
+      my $link_id = $_[ARG0]->[0];
+      delete $heap->{pending}->{$link_id};
     },
   );
 
