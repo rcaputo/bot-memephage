@@ -15,6 +15,9 @@ use vars qw(@ISA @EXPORT);
 # Helper function to turn a duration into something humans enjoy
 # seeing.
 
+# coral: This could be done in an RFC-compliant form with Reefknot's
+#        Net::ICal::Duration.
+
 sub _elapsed {
   my ($s, $p) = @_;
   my ($t, @o);
