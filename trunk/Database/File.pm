@@ -54,7 +54,8 @@ sub FORA          () { 14 }
 use vars qw( %id_by_link %link_by_id $link_seq @recent $log_file );
 
 BEGIN {
-  my %conf  = get_items_by_name('db');
+  my $database = (get_names_by_type('database'))[0];
+  my %conf  = get_items_by_name($database);
   $log_file = $conf{dbname};
 
   unless (-e $log_file) {
