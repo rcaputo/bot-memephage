@@ -1,6 +1,21 @@
 $Id$
 
 ----------
+2002-08-05
+----------
+
+devin: Added config options for HTTP authentication login/password.
+
+devin: Fix bug in Util/Conf.pm where config items named 'type' were
+       ignored.
+
+devin: Move definition of flat file to dbname in the database section of
+       the config file; make Database/File.pm actually use it.
+
+devin: Load the proper Database back end based on the config file.
+       (This closes sourceforge task ID 57865.)
+
+----------
 2002-08-04
 ----------
 
