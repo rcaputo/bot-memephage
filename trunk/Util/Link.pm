@@ -10,6 +10,7 @@ use Exporter;
 use POE;
 use PoeWebStuff;
 use PoeConfThing;
+use PoeLinkDatabase;
 
 use vars qw(@ISA @EXPORT);
 @ISA    = qw(Exporter);
