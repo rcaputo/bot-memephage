@@ -196,7 +196,7 @@ foreach my $mud (get_names_by_type('mud')) {
 
 	    foreach my $link (@links) {
 	      next unless defined $link and length $link;
-              my $link_id = get_link_id( "nerdsholm", $speaker, $link, $description );
+              my $link_id = get_link_id( $mud, $speaker, $link, $description );
 
               # Make a shorter link if it's too long.
               if (length($link) > 75) {
