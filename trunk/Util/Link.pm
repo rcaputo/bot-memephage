@@ -45,7 +45,7 @@ sub FORA          () { 14 }
 my (%id_by_link, %link_by_id, $link_seq, @recent, $log_file);
 
 BEGIN {
-  $log_file = '/home/memephage/bot/links.list';
+  $log_file = './links.list';
 
   unless (-e $log_file) {
     open LOG_FILE, ">$log_file" or die "can't create $log_file: $!";
