@@ -59,7 +59,6 @@ POE::Component::JobQueue->spawn
         ( inline_states =>
           { _start   => \&check_start,
             got_name => \&check_got_dns,
-            got_head => \&check_got_head,
             got_body => \&check_got_body,
           },
           args => [ $postback, $link ]
@@ -97,22 +96,25 @@ sub check_got_dns {
   }
 
   # The actual responses don't matter.
-  my $head_request = HTTP::Request->new( HEAD => $heap->{link} );
+  my $body_request = HTTP::Request->new( GET => $heap->{link} );
   my $url = URI->new( $heap->{link} );
   $url = uf_uri($url);
-  $head_request->url( $url );
+  $body_request->url( $url );
 
-  $kernel->post( fetcher => request => got_head => $head_request );
+  # Limit the request size.
+  $body_request->push_header( Range => "bytes=0-" . MAX_GET_SIZE );
+
+  $kernel->post( fetcher => request => got_body => $body_request );
 }
 
-sub check_got_head {
+sub check_got_body {
   my ($kernel, $heap) = @_[KERNEL, HEAP];
   my $request  = $_[ARG0]->[0];
   my $response = $_[ARG1]->[0];
 
   my $link = $heap->{link};
 
-  link_set_status( $link, "HEAD " .
+  link_set_status( $link, "GET " .
                    ( defined($response->code())
                      ? $response->code()
                      : "(undef)"
@@ -123,14 +125,14 @@ sub check_got_head {
                    )
                  );
 
+  return unless defined $response->code();
+
   # It's a redirect?!  Redirect!
   my $code = $response->code();
-  if ( defined $code and
-       ( $code == 301 or # moved permamently
-         $code == 302 or # found (see here)
-         $code == 303 or # see other
-         $code == 307    # temporary redirect
-       )
+  if ( $code == 301 or # moved permamently
+       $code == 302 or # found (see here)
+       $code == 303 or # see other
+       $code == 307    # temporary redirect
      ) {
     my $location = $response->header('Location');
     local $URI::ABS_ALLOW_RELATIVE_SCHEME = 1;
@@ -146,12 +148,11 @@ sub check_got_head {
     $heap->{redirect} = $location;
     $heap->{loop}->{$location} = 1;
 
-    $kernel->post( fetcher => request => got_head => $referral );
+    $kernel->post( fetcher => request => got_body => $referral );
     return;
   }
 
-  return unless defined $response->code();
-  return unless $response->is_success;
+  return unless $response->is_success();
 
   if (defined $response->last_modified()) {
     link_set_head_time($link, str2time($response->date(), 'GMT'));
@@ -162,7 +163,7 @@ sub check_got_head {
     link_set_head_type($link, $response->content_type());
   }
   else {
-    $type = 'text';
+    $type = 'text/guessed';
   }
 
   my $size = $response->content_length();
@@ -177,51 +178,31 @@ sub check_got_head {
     link_set_title($link, $response->title());
   }
 
-  # Build a partial request thing.
-  if ($type =~ /text/i) {
-    my $get = HTTP::Request->new( GET => $heap->{redirect} );
-    my $max_get_size = $size;
-    $max_get_size = MAX_GET_SIZE if $max_get_size > MAX_GET_SIZE;
-    $get->push_header( Range => "bytes=0-$max_get_size" );
-
-    $kernel->post( fetcher => request => got_body => $get );
-  }
-}
-
-sub check_got_body {
-  my ($kernel, $heap) = @_[KERNEL, HEAP];
-  my $request  = $_[ARG0]->[0];
-  my $response = $_[ARG1]->[0];
-
-  my $link = $heap->{link};
   my $redirect = $heap->{redirect};
-
-  link_set_status( $link, "GET " . $response->code() . ": " .
-                   $response->message()
-                 );
-  return unless $response->is_success;
-
-  my $content = $response->content();
-  $content =~ s/\s+/ /g;
-
-  if ($content =~ m{< *title *> *(.+?) *< */ *title *>}i) {
-    link_set_title($link, $1);
-  }
-
-  if ( $content =~
-       m{< *meta *name *= *"description" *content *= *\" *([^\"<>]+) *\" *>}i
-     ) {
-    link_set_meta_desc($link, $1);
-  }
-
-  if ( $content =~
-       m{< *meta *name *= *"keywords" *content *= *\" *([^\"<>]+) *\" *>}i
-     ) {
-    link_set_meta_keys($link, $1);
-  }
 
   if ($link ne $redirect) {
     link_set_redirect($link, $redirect);
+  }
+
+  if ($type =~ /text/i) {
+    my $content = $response->content();
+    $content =~ s/\s+/ /g;
+
+    if ($content =~ m{< *title *> *(.+?) *< */ *title *>}i) {
+      link_set_title($link, $1);
+    }
+
+    if ( $content =~
+	 m{< *meta *name *= *"description" *content *= *\" *([^\"<>]+) *\" *>}i
+       ) {
+      link_set_meta_desc($link, $1);
+    }
+
+    if ( $content =~
+	 m{< *meta *name *= *"keywords" *content *= *\" *([^\"<>]+) *\" *>}i
+       ) {
+      link_set_meta_keys($link, $1);
+    }
   }
 }
 
