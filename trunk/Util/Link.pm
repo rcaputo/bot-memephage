@@ -164,7 +164,9 @@ sub get_link_by_id {
 }
 
 #------------------------------------------------------------------------------
-# Fetch stale links.
+
+# Fetch stale links.  Stale links are ones that have been checked, but
+# they haven't been checked recently.
 
 sub get_stale_links {
   my $age = shift;
@@ -178,14 +180,14 @@ sub get_stale_links {
   return @stale;
 }
 
+# Unchecked links are ones that have never been checked before.
+
 sub get_unchecked_links {
   my @unchecked =
     ( sort { $link_by_id{$b}->[TIME] <=> $link_by_id{$a}->[TIME] }
       grep { my $link = $link_by_id{$_};
 	     ( !defined($link->[CHECK_TIME]) or
-               $link->[CHECK_TIME] == 0 or
-	       !defined($link->[CHECK_STATUS]) or
-	       ($link->[CHECK_STATUS] !~ /GET 2/)
+               $link->[CHECK_TIME] == 0
 	     )
 	   } keys %link_by_id
     );
