@@ -104,15 +104,23 @@ END {
 }
 
 #------------------------------------------------------------------------------
+# Get an ID for a link.
+sub get_id_by_link {
+  my ($link) = @_;
+  return $id_by_link{$link} if exists $id_by_link{$link};
+  return undef;
+}
+
+#------------------------------------------------------------------------------
 # Get an ID for a link.  It may store the link if it's new.
 
 sub get_link_id {
   my ($fora, $user, $link, $description) = @_;
 
-  if (exists $id_by_link{$link}) {
-    my $link_seq = $id_by_link{$link};
-    $link_by_id{$link_seq}->[MENTION_COUNT]++;
-    return $id_by_link{$link};
+  my $id = get_id_by_link($link);
+  if (defined $id) {
+    $link_by_id{$id}->[MENTION_COUNT]++;
+    return get_id_by_link($link);
   }
 
   $id_by_link{$link} = ++$link_seq;
@@ -359,28 +367,28 @@ sub get_link_as_table_row {
 
 sub link_set_status {
   my ($link, $status) = @_;
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[CHECK_STATUS] = $status;
   $link_rec->[CHECK_TIME]   = time();
 }
 
 sub link_set_redirect {
   my ($link, $redirect) = @_;
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[REDIRECT] = $redirect;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_title {
   my ($link, $title) = @_;
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[PAGE_TITLE] = $title;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_meta_desc {
   my ($link, $desc) = @_;
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[PAGE_DESC] = $desc;
   $link_rec->[CHECK_TIME] = time();
 }
@@ -393,28 +401,28 @@ sub link_set_meta_keys {
   @keys{@keys} = @keys;
   $keys = join(', ', sort keys %keys );
 
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[PAGE_KEYS] = $keys;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_head_time {
   my ($link, $time) = @_;
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[PAGE_TIME] = $time;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_head_size {
   my ($link, $size) = @_;
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[PAGE_SIZE] = $size;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_head_type {
   my ($link, $type) = @_;
-  my $link_rec = $link_by_id{$id_by_link{$link}};
+  my $link_rec = $link_by_id{get_id_by_link($link)};
   $link_rec->[PAGE_TYPE] = $type;
   $link_rec->[CHECK_TIME] = time();
 }
