@@ -27,6 +27,9 @@ use vars qw(@ISA @EXPORT);
 #------------------------------------------------------------------------------
 # Helper function to record links.
 
+sub FLUSH_FIRST_MINUTES () { 30 }  # First flush after N minutes.
+sub FLUSH_REST_MINUTES  () { 60 }  # Subsequent flushes after N minutes.
+
 sub LINK          () {  0 }
 sub DESC          () {  1 }
 sub USER          () {  2 }
@@ -108,8 +111,9 @@ END {
 
 #------------------------------------------------------------------------------
 # Get an ID for a link.
+
 sub get_id_by_link {
-  my ($link) = @_;
+  my $link = shift;
   return $id_by_link{$link} if exists $id_by_link{$link};
   return undef;
 }
@@ -149,7 +153,7 @@ sub get_link_id {
   undef @recent;
 
   # Request a lookup.
-  $poe_kernel->post( linkchecker => enqueue => 'ignore this' => $link );
+  $poe_kernel->post( linkchecker => enqueue => 'ignore this' => $link_seq );
 
   return $link_seq;
 }
@@ -371,63 +375,63 @@ sub get_link_as_table_row {
 # Accessors.
 
 sub link_set_status {
-  my ($link, $status) = @_;
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my ($link_id, $status) = @_;
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[CHECK_STATUS] = $status;
   $link_rec->[CHECK_TIME]   = time();
 }
 
 sub link_set_redirect {
-  my ($link, $redirect) = @_;
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my ($link_id, $redirect) = @_;
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[REDIRECT] = $redirect;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_title {
-  my ($link, $title) = @_;
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my ($link_id, $title) = @_;
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[PAGE_TITLE] = $title;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_meta_desc {
-  my ($link, $desc) = @_;
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my ($link_id, $desc) = @_;
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[PAGE_DESC] = $desc;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_meta_keys {
-  my ($link, $keys) = @_;
+  my ($link_id, $keys) = @_;
 
   my @keys = split(/ *, */, lc($keys));
   my %keys;
   @keys{@keys} = @keys;
   $keys = join(', ', sort keys %keys );
 
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[PAGE_KEYS] = $keys;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_head_time {
-  my ($link, $time) = @_;
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my ($link_id, $time) = @_;
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[PAGE_TIME] = $time;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_head_size {
-  my ($link, $size) = @_;
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my ($link_id, $size) = @_;
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[PAGE_SIZE] = $size;
   $link_rec->[CHECK_TIME] = time();
 }
 
 sub link_set_head_type {
-  my ($link, $type) = @_;
-  my $link_rec = $link_by_id{get_id_by_link($link)};
+  my ($link_id, $type) = @_;
+  my $link_rec = $link_by_id{$link_id};
   $link_rec->[PAGE_TYPE] = $type;
   $link_rec->[CHECK_TIME] = time();
 }
@@ -437,13 +441,11 @@ sub link_set_head_type {
 
 POE::Session->new
   ( _start => sub {
-      # Flush links in 15 minutes.
-      $_[KERNEL]->delay( flush_links => 15 * 60 );
+      $_[KERNEL]->delay( flush_links => FLUSH_FIRST_MINUTES * 60 );
     },
 
     flush_links => sub {
-      # And every half hour thereafter.
-      $_[KERNEL]->delay( flush_links => 30 * 60 );
+      $_[KERNEL]->delay( flush_links => FLUSH_REST_MINUTES * 60 );
       flush_links();
     },
   );
