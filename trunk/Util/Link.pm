@@ -70,7 +70,7 @@ BEGIN {
 
     # Record ID by link, but partition links by fora.  This is where
     # forum partitioning comes in.
-    $id_by_link{$link[FORA]}->{$link[LINK]} = $id;
+    $id_by_link{$link[LINK]} = $id;
 
     # So new links are added with new IDs.
     $link_seq = $id;
