@@ -12,9 +12,16 @@ coral: html encoding of html output is useful. done.
 coral: POST queries to http://64.53.6.49/post work now.
 coral: added tools/email-pipe.pl for forwarding email to memephage!
 
-TODO: set up per-mailing-list aliases or something. RRE, progstone.
-      memephage+rre@ maps to POST rre=<msg>
-      multiple messages - outlook attached message support!  MIME!
+2002-02-12
+
+rcc: Added /robots.txt response.
+rcc: Added basic authentication (login/password hardcoded for now).
+
+** To do:
+
+[coral]: Set up per-mailing-list aliases or something. RRE, progstone.
+         memephage+rre@ maps to POST rre=<msg>
+         multiple messages - outlook attached message support!  MIME!
 
 ** Feature ideas:
 

@@ -105,34 +105,57 @@ sub httpd_session_got_query {
     return;
   }
 
+  ###---------------------------------------------
   ### These requests don't require authentication.
+  ###---------------------------------------------
 
   my $url = $request->url() . '';
 
-  ### Starter link.
+  ### Root page.
 
-  if ($url =~ /^\/link\/(\d+)/) {
-
-    my $big_link = get_link_by_id($1);
-    if (defined $big_link) {
-      #$big_link = url_encode($big_link);
-
-      my $response = HTTP::Response->new(301);
-      $response->push_header( 'Location', $big_link );
-      $response->push_header( 'Content-type', 'text/html' );
-      $response->content
-        ( "<html><head><title>Redirecting to a longer link...</title></head>" .
-          "<body><h1>Here you go...</h1>" .
-          "<a href='$big_link'>$big_link</a>" .
-          "</body></html>"
-        );
-      $heap->{wheel}->put( $response );
-      return;
-    }
-
-    my $response = HTTP::Response->new(404);
+  if ($url eq '/') {
+    my $response = HTTP::Response->new(200);
     $response->push_header( 'Content-type', 'text/html' );
+
+    $response->content
+      ( "<html><head><title>$heap->{my_name} main menu</title></head>" .
+        "<body>" .
+        "<ul>" .
+        "<li><a href='/recent/5'>Five most recent links</a>" .
+        "<li><a href='/recent/10'>Ten most recent links</a>" .
+        "<li><a href='/recent/25'>Twenty-five most recent links</a>" .
+        "<li><a href='/recent/50'>Fifty most recent links</a>" .
+        "<li><a href='/recent/100'>Hundred most recent links</a>" .
+	"<li><a href='/since/'>Links from the last hour</a>" .
+        "</ul>" .
+        "<p>" .
+        "To make submissions easier, this javascript link will add " .
+        "whatever page is currently visible in your browser.  If your " .
+        "browser supports it, the confirmation page will appear in a " .
+        "new window." .
+        "</p>" .
+        "<a href=\"javascript:void(window.open('http://" .
+        "$heap->{my_inam}:$heap->{my_port}/add?'+location.href))" .
+        "\">" .
+        "Send link to $heap->{my_name}</a>." .
+        "</p>" .
+        "It's really convenient as a bookmark, especially in a toolbar."
+      );
+
     $heap->{wheel}->put( $response );
+    return;
+  }
+
+  ### Deny robots.
+
+  if ($url eq '/robots.txt') {
+    my $response = HTTP::Response->new(200);
+    $response->push_header( 'Content-type', 'text/plain' );
+    $response->content
+      ( "User-agent: *\x0d\x0a" .
+        "Disallow: /\x0d\x0a"
+      );
+    $heap->{wheel}->put($response);
     return;
   }
 
@@ -176,7 +199,7 @@ sub httpd_session_got_query {
 
     $heap->{wheel}->put( $response );
     return;
-  } 
+  }
 
   if ($url =~ /^\/post$/) {
 
@@ -204,6 +227,128 @@ sub httpd_session_got_query {
       'Thanks!'
     );
 
+    $heap->{wheel}->put( $response );
+    return;
+  }
+
+  ### Do basic authentication.
+
+  my ($login, $password) = $request->authorization_basic();
+
+  unless ( defined($login) and ($login eq 'memephage') and
+           defined($password) and ($password eq 'noroboto')
+         )
+  {
+    my $response = new HTTP::Response(401);
+    $response->push_header('WWW-Authenticate', 'Basic realm="memephage"');
+    $response->push_header('Server', 'memephage/1.0');
+    $response->push_header('Content-Type', 'text/html');
+    $response->content
+      ( '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN"> ' .
+        '<html>' .
+        '<head>' .
+        '<title>WARNING: You are in a restricted area.</title>' .
+        '<link rev="made" href="mailto:troc@netrus.net">' .
+        '</head>' .
+        '<body bgcolor="#C00000" text="#FFFFFF" link="#00FF00" ' .
+        'vlink="#00FF00">' .
+        '<table border=0 cellspacing=0 width="100%" height="100%">' .
+        '<tr>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '<td align=center colspan=7><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#FFFF00" width="6%"><font size="7">&#160;</font></td>' .
+        '<td align=center colspan=7><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="6%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '<td align=center valign=middle colspan=7 rowspan=3>'  .
+        '<tt><font size="7"><b>* WARNING *<br>'  .
+        '<br>You are in a restricted area.</b></font></tt></td>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#FFFF00" width="6%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="6%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#FFFF00" width="6%"><font size="7">&#160;</font></td>' .
+        '<td align=center colspan=7><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="6%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '<td align=center colspan=7><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="6%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#000000" width="11%"><font size="7">&#160;</font></td>' .
+        '<td bgcolor="#FFFF00" width="11%"><font size="7">&#160;</font></td>' .
+        '</tr>' .
+        '<tr>' .
+        '<td colspan=9 align=right>' .
+        '<p>' .
+        '<font size="1">' .
+        '<a href="http://poe.perl.org/">Powered by POE</a>' .
+        '</font>' .
+        '</td>'  .
+        '</tr>'  .
+        '</table>' .
+        '</body>' .
+        '</html>'
+      );
+    $heap->{wheel}->put($response);
+    return;
+  }
+
+  ### Link redirection.
+
+  if ($url =~ /^\/link\/(\d+)/) {
+
+    my $big_link = get_link_by_id($1);
+    if (defined $big_link) {
+      #$big_link = url_encode($big_link);
+
+      my $response = HTTP::Response->new(301);
+      $response->push_header( 'Location', $big_link );
+      $response->push_header( 'Content-type', 'text/html' );
+      $response->content
+        ( "<html><head><title>Redirecting to a longer link...</title></head>" .
+          "<body><h1>Here you go...</h1>" .
+          "<a href='$big_link'>$big_link</a>" .
+          "</body></html>"
+        );
+      $heap->{wheel}->put( $response );
+      return;
+    }
+
+    my $response = HTTP::Response->new(404);
+    $response->push_header( 'Content-type', 'text/html' );
     $heap->{wheel}->put( $response );
     return;
   }
@@ -249,41 +394,6 @@ sub httpd_session_got_query {
     my $title = "Stale links...";
     my $response = build_log($title, \@stale);
     $heap->{wheel}->put($response);
-    return;
-  }
-
-  ### Root page.
-
-  if ($url eq '/') {
-    my $response = HTTP::Response->new(200);
-    $response->push_header( 'Content-type', 'text/html' );
-
-    $response->content
-      ( "<html><head><title>$heap->{my_name} main menu</title></head>" .
-        "<body>" .
-        "<ul>" .
-        "<li><a href='/recent/5'>Five most recent links</a>" .
-        "<li><a href='/recent/10'>Ten most recent links</a>" .
-        "<li><a href='/recent/25'>Twenty-five most recent links</a>" .
-        "<li><a href='/recent/50'>Fifty most recent links</a>" .
-        "<li><a href='/recent/100'>Hundred most recent links</a>" .
-	"<li><a href='/since/'>Links from the last hour</a>" .
-        "</ul>" .
-        "<p>" .
-        "To make submissions easier, this javascript link will add " .
-        "whatever page is currently visible in your browser.  If your " .
-        "browser supports it, the confirmation page will appear in a " .
-        "new window." .
-        "</p>" .
-        "<a href=\"javascript:void(window.open('http://" .
-        "$heap->{my_inam}:$heap->{my_port}/add?'+location.href))" .
-        "\">" .
-        "Send link to $heap->{my_name}</a>." .
-        "</p>" .
-        "It's really convenient as a bookmark, especially in a toolbar."
-      );
-
-    $heap->{wheel}->put( $response );
     return;
   }
 
