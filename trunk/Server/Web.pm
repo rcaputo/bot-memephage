@@ -181,13 +181,14 @@ sub httpd_session_got_query {
     $description = "(none)"
       unless defined $description and length $description;
 
-    my $host = "$heap->{remote_addr}:$heap->{remote_port}";
-    foreach my $link (@links) {
-      next unless defined $link and length $link;
-      $_[KERNEL]->yield( do => sub {
-        get_link_id("web", @_[ARG0..ARG1], "[email]");
-      }, $host, $link );
-    }
+    $_[KERNEL]->yield( do => sub {
+      foreach my $link (@_[ARG1..$#_]) {
+        next unless defined $link and length $link;
+        $_[KERNEL]->yield( do => sub {
+          get_link_id("web", @_[ARG0..ARG1], "[email]");
+        }, $_[ARG0], $link );
+      }
+    }, "$heap->{remote_addr}:$heap->{remote_port}", @links );
 
     $response->content(
       'Thanks!'
