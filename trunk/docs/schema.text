@@ -1,0 +1,63 @@
+# $Id$
+
+link
+        sequence number
+        url
+        title
+        timestamp
+
+rating
+        sequence number
+        rate
+
+rate-link
+        sequence number
+        rating.sequence number
+        link.sequence number
+        user.sequence number
+        timestamp
+
+keyword
+        sequence number
+        keyword
+        definition
+
+keword-link
+        sequence number
+        link.sequence number
+        user.sequence number
+        timestamp
+
+note
+        sequence number 
+        subject
+        body
+        timestamp
+        link.sequence number
+        user.sequence number
+
+user
+        sequence number
+        login id
+        password
+        add timestamp
+        last use timestamp
+
+checkup
+        sequence number
+        link.sequence number
+        last check timestamp
+        last check status
+
+setup
+        sequence number
+        setting name
+        setting value
+        description
+
+cookies
+        sequence number
+        domain
+        cookie key
+        cookie value
+        expiration timestamp
