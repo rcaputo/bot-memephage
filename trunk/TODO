@@ -18,6 +18,65 @@ coral: In the near future, this will all be tied through Postgres.
 
 coral: schema.text is in cvs and will be postgres-ized someday.
 
+----------
+IRC Client
+----------
+
+When connecting, choose alternative nicks if the preferred one is
+taken.  Notice when the preferred nick is available again, and reclaim
+it.
+
+----------
+MUD Client
+----------
+
+It has been requested that the bot learn how to hug. :)
+
+----------
+Web Server
+----------
+
+Make the presentation prettier.
+
+Use static_response() from Utils::Web.  It includes a minimalistic
+template engine which can be used to offload most of the markup to
+separate, easily editable files.
+
+Style sheets.
+
+----------
+Web Client
+----------
+
+Move the constants that define GET size and stale-link checking into
+the configuration file.
+
+Move the resolver and HTTP timeout options to the configuration file.
+
+Make the HTTP UserAgent header an option in the configuration file.
+
+--------
+Database
+--------
+
+Make the selection of a database format significant.
+
+Test the Postgres back-end.
+
+Add a MySQL back-end.
+
+Create a database initialization script that reads docs/schema.sql and
+creates the necessary tables, indexes, and relations for whichever
+database the user is using.
+
+-------------
+Configuration
+-------------
+
+Rename memephage.conf to memephage.conf.orig.  Require people to copy
+that into memephage.conf and edit it, rather than clobbering their
+customizations.
+
 -------------
 Mailing Lists
 -------------
@@ -37,6 +96,10 @@ coral: Generate thumbnails for linked images, and show them inline in
 coral: Submit URLs to the Internet archive (web.archive.org)
        http://www.alexa.com/cgi-bin/request_bot.cgi?url=$url&redirect=$url
        There definitely are some downsides to this one.
+
+rocco: Extract the generic utilities and bot components into a
+       separate framework project.  Alternatively, replace it with of
+       the many bot frameworks springing up.
 
 ---
 End
