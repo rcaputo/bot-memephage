@@ -14,3 +14,7 @@ coral: html encoding of html output is useful. done.
 
 [coral]: generate thumbnails and show them
          (disabled by default, enabled by cgi ?f=b parameter)
+
+[coral]: submit urls to the Internet archive (web.archive.org)
+         http://www.alexa.com/cgi-bin/request_bot.cgi?url=$url&redirect=$url
+         definitely some downsides to this one.
