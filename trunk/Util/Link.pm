@@ -65,6 +65,9 @@ BEGIN {
       unless $link[MENTION_COUNT];
     $link[FORA] = 'global'
       unless defined($link[FORA]) and length($link[FORA]);
+    $link[TIME] = 0 unless defined($link[TIME]) and $link[TIME] =~ /^\d+$/;
+    $link[CHECK_TIME] = 0
+      unless defined($link[CHECK_TIME]) and $link[CHECK_TIME] =~ /^\d+$/;
 
     # Store the link by its unique ID.
     $link_by_id{$id} = \@link;
@@ -136,7 +139,7 @@ sub get_link_id {
       undef,         # PAGE_TIME
       undef,         # PAGE_SIZE
       undef,         # PAGE_TYPE
-      undef,         # CHECK_TIME
+      0,             # CHECK_TIME
       undef,         # CHECK_STATUS
       1,             # MENTION_COUNT
       undef,         # REDIRECT
@@ -168,7 +171,7 @@ sub get_stale_links {
   my @stale =
     ( sort { $link_by_id{$b}->[TIME] <=> $link_by_id{$a}->[TIME] }
       grep { ( defined($link_by_id{$_}->[CHECK_TIME]) and
-	       (time() - $link_by_id{$_}->[CHECK_TIME] >= $age)
+	       ((time() - $link_by_id{$_}->[CHECK_TIME]) >= $age)
 	     )
 	   } keys %link_by_id
     );
@@ -180,7 +183,7 @@ sub get_unchecked_links {
     ( sort { $link_by_id{$b}->[TIME] <=> $link_by_id{$a}->[TIME] }
       grep { my $link = $link_by_id{$_};
 	     ( !defined($link->[CHECK_TIME]) or
-	       !length($link->[CHECK_TIME]) or
+               $link->[CHECK_TIME] == 0 or
 	       !defined($link->[CHECK_STATUS]) or
 	       ($link->[CHECK_STATUS] !~ /GET 2/)
 	     )
@@ -322,7 +325,7 @@ sub get_link_as_table_row {
   }
 
 
-  if (defined $link->[CHECK_TIME] and length $link->[CHECK_TIME]) {
+  if (defined $link->[CHECK_TIME] and $link->[CHECK_TIME]) {
     $html .= ( "<tr>" .
                "<th align=left valign=top width='1%'>Status:</th>" .
                ( "<td width='99%'>" .
