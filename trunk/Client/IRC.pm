@@ -39,15 +39,17 @@ foreach my $server (get_names_by_type('irc')) {
           $kernel->delay( autoping => 60 );
 
           $kernel->yield( 'connect' );
-        },
+      },
 
-        autoping => sub {
+      # ctcp ping ourselves every minute to generate network traffic so
+      # we can detect a broken connection faster
+      autoping => sub {
           my $kernel = $_[KERNEL];
           $kernel->post( $server => ctcp => $conf{nick} => "PING 123456789" );
           $kernel->delay( autoping => 60 );
-        },
+      },
 
-        connect => sub {
+      connect => sub {
           my ($kernel, $heap) = @_[KERNEL, HEAP];
 
           $kernel->post( $server => connect =>
@@ -75,10 +77,16 @@ foreach my $server (get_names_by_type('irc')) {
         $kernel->post( $server => quit => $conf{quit} );
       },
 
+      # events to be totally ignored
+      map({$_ => sub {} } qw(irc_002 irc_003 irc_004 irc_005 irc_250 irc_251
+			     irc_254 irc_255 irc_265 irc_266 irc_301 irc_306
+			     irc_353 irc_366 irc_372 irc_375 irc_376
+			     irc_ctcp_ping irc_mode irc_join)),
+
       _default => sub {
         my ($state, $event, $args) = @_[STATE, ARG0, ARG1];
         $args ||= [ ];
-        print "default $state = $event @$args\n";
+        log_event("default $state = $event @$args)");
         return 0;
       },
 
@@ -100,14 +108,14 @@ foreach my $server (get_names_by_type('irc')) {
       irc_ctcp_version => sub {
         my ($kernel, $sender) = @_[KERNEL, ARG0];
         my $who = (split /!/, $sender)[0];
-        print "ctcp version from $who\n";
+        log_event("ctcp version from $who");
         $kernel->post( $server => ctcpreply => $who, "VERSION $conf{cver}" );
       },
 
       irc_ctcp_clientinfo => sub {
         my ($kernel, $sender) = @_[KERNEL, ARG0];
         my $who = (split /!/, $sender)[0];
-        print "ctcp clientinfo from $who\n";
+        log_event("ctcp clientinfo from $who");
         $kernel->post( $server => ctcpreply =>
                        $who, "CLIENTINFO $conf{ccinfo}"
                      );
@@ -116,7 +124,7 @@ foreach my $server (get_names_by_type('irc')) {
       irc_ctcp_userinfo => sub {
         my ($kernel, $sender) = @_[KERNEL, ARG0];
         my $who = (split /!/, $sender)[0];
-        print "ctcp userinfo from $who\n";
+        log_event("ctcp userinfo from $who");
         $kernel->post( $server => ctcpreply =>
                        $who, "USERINFO $conf{cuinfo}"
                      );
@@ -129,25 +137,25 @@ foreach my $server (get_names_by_type('irc')) {
 
       irc_kick => sub {
         my ($kernel, $who, $where, $isitme, $reason) = @_[KERNEL, ARG0..ARG4];
-        print "$who was kicked from $where: $reason\n";
+        log_event("$who was kicked from $where: $reason");
         # $kernel->delay( join => 15 => $where );
       },
 
       irc_disconnected => sub {
         my ($kernel, $server) = @_[KERNEL, ARG0];
-        print "Lost connection to server $server.\n";
+        log_event("Lost connection to server $server.");
         $kernel->delay( connect => 60 );
       },
 
       irc_error => sub {
         my ($kernel, $error) = @_[KERNEL, ARG0];
-        print "Server error occurred: $error\n";
+        log_event("Server error occurred: $error");
         $kernel->delay( connect => 60 );
       },
 
       irc_socketerr => sub {
         my ($kernel, $error) = @_[KERNEL, ARG0];
-        print "IRC client ($server): socket error occurred: $error\n";
+        log_event("IRC client ($server): socket error occurred: $error");
         $kernel->delay( connect => 60 );
       },
 
@@ -155,7 +163,7 @@ foreach my $server (get_names_by_type('irc')) {
         my ($kernel, $who, $where, $msg) = @_[KERNEL, ARG0..ARG2];
         $who = (split /!/, $who)[0];
         $where = $where->[0];
-        print "<$who:$where> $msg\n";
+        log_event("<$who:$where> $msg");
 
         soak_up_links($conf{logto}, $who, $msg);
       },
@@ -164,7 +172,7 @@ foreach my $server (get_names_by_type('irc')) {
         my ($kernel, $who, $msg) = @_[KERNEL, ARG0, ARG2];
 
         $who = (split /!/, $who)[0];
-        print "<$who:msg> $msg\n";
+        log_event("<$who:msg> $msg");
 
         soak_up_links($conf{logto}, $who, $msg);
       },
@@ -183,6 +191,12 @@ sub soak_up_links {
     next unless defined $link and length $link;
     get_link_id($logto, $who, $link, $description );
   }
+}
+
+sub log_event {
+    my $text = shift;
+    # print for now, maybe syslog later
+    print $text, "\n";
 }
 
 #------------------------------------------------------------------------------
