@@ -138,9 +138,9 @@ sub httpd_session_got_query {
     $response->push_header( 'Content-type', 'text/html' );
 
     if ($link =~ s/(http:\/\/\S*)/$1/) {
-      get_link_id( "web", "$heap->{remote_addr}:$heap->{remote_port}",
-                   $1, "[link]"
-                 );
+      $_[KERNEL]->yield( do => sub {
+        get_link_id( "web", @_[ARG0..ARG1], "[link]" );
+      }, "$heap->{remote_addr}:$heap->{remote_port}", $1 );
 
       $response->content
         ( "<html><head><title>$heap->{my_name} thanks you</title></head>" .
@@ -181,9 +181,12 @@ sub httpd_session_got_query {
     $description = "(none)"
       unless defined $description and length $description;
 
+    my $host = "$heap->{remote_addr}:$heap->{remote_port}";
     foreach my $link (@links) {
       next unless defined $link and length $link;
-      get_link_id("web", "$heap->{remote_addr}:$heap->{remote_port}", $link, "[email]");
+      $_[KERNEL]->yield( do => sub {
+        get_link_id("web", @_[ARG0..ARG1], "[email]");
+      }, $host, $link );
     }
 
     $response->content(
@@ -367,6 +370,7 @@ foreach my $server (get_names_by_type(WEBLOG_TYPE)) {
             got_flush => \&httpd_session_flushed,
             got_query => \&httpd_session_got_query,
             got_error => \&httpd_session_got_error,
+            do => sub { goto &{splice(@_, ARG0, 1)} if ref($_[ARG0]) =~ /CODE/ },
             [ @_[ARG0..ARG2], $server,
               $conf{iface}, $conf{port}, $conf{ifname},
             ],
