@@ -58,7 +58,10 @@ You'll need the following Perl modules.
 Setting up
 ----------
 
-Edit memephage.conf.
+If this is your first time setting up, copy memephage.conf-dist to
+memephage.conf and customize it.  Otherwise check memephage.conf-dist
+for new options, and merge them into your existing configuration.
+
 Run memephage.perl.
 
 To do.
