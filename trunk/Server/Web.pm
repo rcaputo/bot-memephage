@@ -83,6 +83,13 @@ sub httpd_session_got_query {
   # referer
   # user-agent string
 
+  ### Responded with an error.  Send it directly.
+
+  if ($request->isa("HTTP::Response")) {
+    $heap->{wheel}->put($request);
+    return;
+  }
+
   ### These requests don't require authentication.
 
   my $url = $request->url() . '';
