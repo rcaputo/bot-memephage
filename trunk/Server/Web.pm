@@ -318,7 +318,8 @@ sub httpd_session_got_query {
         '<td colspan=9 align=right>' .
         '<p>' .
         '<font size="1">' .
-        '<a href="http://poe.perl.org/">Powered by POE</a>' .
+        '<a href="http://sourceforge.net/projects/memephage">Memephage</a>' .
+        ' is powered by <a href="http://poe.perl.org/">POE</a>.' .
         '</font>' .
         '</td>'  .
         '</tr>'  .
@@ -546,12 +547,13 @@ sub build_log {
   }
 
   $content .=
-    ( "<p>" .
-      "<font size='1'>" .
-      "<a href='http://poe.perl.org/'>Powered by POE</a>" .
-      "</font>" .
-      "</p>" .
-      "</body></html>"
+    ( '<p>' .
+      '<font size="1">' .
+      '<a href="http://sourceforge.net/projects/memephage">Memephage</a>' .
+      ' is powered by <a href="http://poe.perl.org/">POE</a>.' .
+      '</font>' .
+      '</p>' .
+      '</body></html>'
     );
 
   $response->content($content);
