@@ -225,7 +225,8 @@ sub parse_link_from_message {
     push @link, $1;
   }
 
-  $description =~ s/\s+/ /g;
+  $description =~ s/^\s*\[link\]\s*[\.\|\#\:\-]+\s*//;
+  $description =~ s/\s*[\.\|\#\:\-]+\s*\[link\]\s*$//;
 
   return ($description, @link);
 }
@@ -355,7 +356,7 @@ sub link_set_status {
   my ($link, $status) = @_;
   my $link_rec = $link_by_id{$id_by_link{$link}};
   $link_rec->[CHECK_STATUS] = $status;
-  $link_rec->[CHECK_TIME] = time();
+  $link_rec->[CHECK_TIME]   = time();
 }
 
 sub link_set_redirect {
