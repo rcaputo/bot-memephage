@@ -169,6 +169,29 @@ sub httpd_session_got_query {
 
     $heap->{wheel}->put( $response );
     return;
+  } 
+
+  if ($url =~ /^\/post$/) {
+    my $response = HTTP::Response->new(200);
+    my $content = $request->content;
+    $content =~ tr/+/ /;
+    $content =~ s/%([a-fA-F0-9]{2})/pack("C", hex($1))/eg;
+    $content =~ s/^\w+=//;
+    my ($description, @links) = parse_link_from_message($content);
+    $description = "(none)"
+      unless defined $description and length $description;
+
+    foreach my $link (@links) {
+      next unless defined $link and length $link;
+      get_link_id("web", "$heap->{remote_addr}:$heap->{remote_port}", $link, "[email]");
+    }
+
+    $response->content(
+      'Thanks!'
+    );
+
+    $heap->{wheel}->put( $response );
+    return;
   }
 
   ### New since TIME.
