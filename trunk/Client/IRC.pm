@@ -160,7 +160,7 @@ foreach my $server (get_names_by_type('irc')) {
         soak_up_links($conf{logto}, $who, $msg);
       },
 
-      irc_private => sub {
+      irc_msg => sub {
         my ($kernel, $who, $msg) = @_[KERNEL, ARG0, ARG2];
 
         $who = (split /!/, $who)[0];
