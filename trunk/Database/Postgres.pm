@@ -76,6 +76,7 @@ SQL
 
 #------------------------------------------------------------------------------
 # Increment the 'mentioned' count of a link by 1.
+
 sub link_id_mention {
   my $link_id = shift;
   # ...

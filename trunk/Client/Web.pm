@@ -320,7 +320,7 @@ POE::Session->new
       }
 
       # Add stale links into the mix.
-      
+
       $kernel->yield( 'check_stale' );
     },
 
