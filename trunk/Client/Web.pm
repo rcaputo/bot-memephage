@@ -6,10 +6,6 @@ use strict;
 
 package PoeWebClient;
 
-use lib '/home/troc/perl/poco/jobqueue/blib/lib';
-use lib '/home/troc/perl/poco/client-dns/blib/lib';
-use lib '/home/troc/perl/poco/client-http/blib/lib';
-
 use POE;
 
 use URI;
