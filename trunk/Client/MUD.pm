@@ -190,16 +190,13 @@ foreach my $mud (get_names_by_type('mud')) {
 
             ### Parse input for useful things.
 
-            my (@links, $description) = parse_link_from_message($message);
+            my ($description, @links) = parse_link_from_message($message);
 	    $description = "(none)"
 	      unless defined $description and length $description;
 
 	    foreach my $link (@links) {
 	      next unless defined $link and length $link;
-              store_link( $conf{logto}, $speaker,
-                          $link, $description
-                        );
-              my $link_id = get_link_id( $conf{logto}->[0], $link );
+              my $link_id = get_link_id( "nerdsholm", $speaker, $link, $description );
 
               # Make a shorter link if it's too long.
               if (length($link) > 75) {
