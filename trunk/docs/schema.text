@@ -71,7 +71,7 @@ user
 
 checkup
         sequence number
-        link.sequence number
+        urls.sequence number
         last check timestamp
         last check status
 
