@@ -154,7 +154,7 @@ sub httpd_session_got_query {
     $response->push_header( 'Content-type', 'text/html' );
 
     $response->content
-      ( "<html><head><title>trocbot 2 main menu</title></head>" .
+      ( "<html><head><title>memephage main menu</title></head>" .
         "<body>" .
         "<ul>" .
         "<li><a href='/recent/5'>Five most recent links</a>" .
