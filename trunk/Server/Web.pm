@@ -39,7 +39,7 @@ sub httpd_session_started {
   my ( $heap,
        $socket, $remote_address, $remote_port,
        $my_name, $my_host, $my_port, $my_ifname
-     ) = @_[HEAP, ARG0..ARG5];
+     ) = @_[HEAP, ARG0..ARG6];
 
   $heap->{my_host} = $my_host;
   $heap->{my_port} = $my_port;
