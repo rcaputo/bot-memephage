@@ -255,7 +255,7 @@ sub get_link_as_table_row {
       "</tr>"
     );
 
-  if (defined $link->[REDIRECT]) {
+  if (defined $link->[REDIRECT] and length $link->[REDIRECT]) {
     $html .=
       ( "<tr>" .
         "<th align=left valign=top width='1%'>Really:</th>" .
