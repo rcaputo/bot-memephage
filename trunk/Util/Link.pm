@@ -10,13 +10,13 @@ use Exporter;
 use POE;
 use Util::Web;
 use Util::Conf;
-use PoeLinkDatabase;
+use Database;
 
 use vars qw(@ISA @EXPORT);
 @ISA    = qw(Exporter);
 @EXPORT = qw( get_link_as_table_row parse_link_from_message
             );
-push @EXPORT, @PoeLinkDatabase::EXPORT;
+push @EXPORT, @Database::EXPORT;
 
 #------------------------------------------------------------------------------
 # Parse link and description from message.  This is independent of the

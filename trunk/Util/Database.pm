@@ -2,7 +2,7 @@
 
 # Manage the link database.
 
-package PoeLinkDatabase;
+package Database;
 
 use strict;
 use Exporter;
