@@ -54,6 +54,16 @@ You'll need the following Perl modules.
   POE::Component::Client::HTTP
   URI::Heuristic
 
+If you're using the experimental Postgres database back-end, you'll
+need Postgres (of course) and:
+
+  (TODO: List the Postgres dependencies here)
+
+You'll also need to build a database:
+
+  % createdb memephage
+  % psql -q memephage < docs/schema.sql
+
 ----------
 Setting up
 ----------
