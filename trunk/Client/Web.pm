@@ -59,6 +59,7 @@ POE::Component::JobQueue->spawn
         ( inline_states =>
           { _start   => \&check_start,
             got_name => \&check_got_dns,
+            got_head => \&check_got_head,
             got_body => \&check_got_body,
           },
           args => [ $postback, $link ]
@@ -96,15 +97,98 @@ sub check_got_dns {
   }
 
   # The actual responses don't matter.
-  my $body_request = HTTP::Request->new( GET => $heap->{link} );
+  my $body_request = HTTP::Request->new( HEAD => $heap->{link} );
   my $url = URI->new( $heap->{link} );
   $url = uf_uri($url);
   $body_request->url( $url );
 
   # Limit the request size.
-  $body_request->push_header( Range => "bytes=0-" . MAX_GET_SIZE );
+  # $body_request->push_header( Range => "bytes=0-" . MAX_GET_SIZE );
 
-  $kernel->post( fetcher => request => got_body => $body_request );
+  $kernel->post( fetcher => request => got_head => $body_request );
+}
+
+sub check_got_head {
+  my ($kernel, $heap) = @_[KERNEL, HEAP];
+  my $request = $_[ARG0]->[0];
+  my $response = $_[ARG1]->[0];
+
+  my $link = $heap->{link};
+
+  if (defined $response) {
+    link_set_status( $link, "HEAD " .
+                     ( defined($response->code())
+                       ? $response->code()
+                       : "(undef)"
+                     ) . ": " .
+                     ( defined($response->message())
+                       ? $response->message()
+                       : "(undef)"
+                     )
+                   );
+  }
+
+  return unless defined $response->code();
+
+  # It's a redirect?!  Redirect!
+  my $code = $response->code();
+  if ( $code == 301 or # moved permamently
+       $code == 302 or # found (see here)
+       $code == 303 or # see other
+       $code == 307    # temporary redirect
+     ) {
+    my $location = $response->header('Location');
+    local $URI::ABS_ALLOW_RELATIVE_SCHEME = 1;
+    my $base = $response->base;
+    $location = URI->new($location, $base)->abs($base);
+    $location = uf_uri($location);
+ 
+    return if exists $heap->{loop}->{$location};
+ 
+    my $referral = $request->clone();
+    $referral->url($location);
+ 
+    $heap->{redirect} = $location;
+    $heap->{loop}->{$location} = 1;
+
+    link_set_redirect($link, $location);
+
+    $kernel->post( fetcher => request => got_head => $referral );
+    return;
+  }
+
+  my $type = 'text/guessed';
+  my $size = "(unknown)";
+  if ($response->is_success()) {
+    if (defined $response->last_modified()) {
+      link_set_head_time($link, str2time($response->date(), 'GMT'));
+    }
+
+    $type = $response->content_type();
+    $type = 'text/guessed' unless defined $type;
+    link_set_head_type($link, $type);
+
+    $size = $response->content_length();
+    $size = '(unknown)' unless defined $size;
+    link_set_head_size($link, $size);
+ 
+    if (defined $response->title()) {
+      link_set_title($link, $response->title());
+    }
+  }
+
+  # Try to fetch more information from the page's headers.
+  if ($type =~ /text/) {
+    my $body_request = HTTP::Request->new( GET => $heap->{redirect} );
+    my $url = URI->new( $heap->{redirect} );
+    $url = uf_uri($url);
+    $body_request->url( $url );
+ 
+    # Limit the request size.
+    $body_request->push_header( Range => "bytes=0-" . MAX_GET_SIZE );
+ 
+    $kernel->post( fetcher => request => got_body => $body_request );
+  }
 }
 
 sub check_got_body {
@@ -126,32 +210,6 @@ sub check_got_body {
                  );
 
   return unless defined $response->code();
-
-  # It's a redirect?!  Redirect!
-  my $code = $response->code();
-  if ( $code == 301 or # moved permamently
-       $code == 302 or # found (see here)
-       $code == 303 or # see other
-       $code == 307    # temporary redirect
-     ) {
-    my $location = $response->header('Location');
-    local $URI::ABS_ALLOW_RELATIVE_SCHEME = 1;
-    my $base = $response->base;
-    $location = URI->new($location, $base)->abs($base);
-    $location = uf_uri($location);
-
-    return if exists $heap->{loop}->{$location};
-
-    my $referral = $request->clone();
-    $referral->url($location);
-
-    $heap->{redirect} = $location;
-    $heap->{loop}->{$location} = 1;
-
-    $kernel->post( fetcher => request => got_body => $referral );
-    return;
-  }
-
   return unless $response->is_success();
 
   if (defined $response->last_modified()) {
@@ -159,20 +217,12 @@ sub check_got_body {
   }
 
   my $type = $response->content_type();
-  if (defined $type) {
-    link_set_head_type($link, $response->content_type());
-  }
-  else {
-    $type = 'text/guessed';
-  }
+  $type = 'text/guessed' unless defined $type;
+  link_set_head_type($link, $response->content_type());
 
   my $size = $response->content_length();
-  if (defined $size) {
-    link_set_head_size($link, $response->content_length());
-  }
-  else {
-    $size = MAX_GET_SIZE;
-  }
+  $size = "(unknown)" unless defined $size;
+  link_set_head_size($link, $response->content_length());
 
   if (defined $response->title()) {
     link_set_title($link, $response->title());
