@@ -65,7 +65,7 @@ foreach my $server (get_names_by_type('irc')) {
 
           $heap->{server_index}++;
           $heap->{server_index} = 0
-            if $heap->{server_index} > @{$conf{server}};
+            if $heap->{server_index} >= @{$conf{server}};
       },
 
       join => sub {
