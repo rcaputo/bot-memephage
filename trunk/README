@@ -36,7 +36,7 @@ unceremoniously displayed in the log:
   Content:     text/html (unknown size)
 
 As if that weren't enough, it re-verifies its links weekly, updating
-their Status as it changes.
+their Status as they change.
 
 ------------
 Requirements
@@ -64,8 +64,6 @@ for new options, and merge them into your existing configuration.
 
 Run memephage.perl.
 
-To do.
-
 ------
 Errors
 ------
@@ -81,7 +79,9 @@ Errors
 Support
 -------
 
-None yet, sorry.
+Support is through memephage's SourceForge project.  See:
+http://sf.net/projects/memephage/ for task trackers, forums, and other
+tasty morsels.
 
 ---
 End
