@@ -7,7 +7,7 @@ package PoeLinkManager;
 use strict;
 use Exporter;
 
-use POE::Kernel;
+use POE;
 use PoeWebStuff;
 use PoeConfThing;
 
@@ -78,7 +78,7 @@ BEGIN {
   close LOG_FILE;
 }
 
-END {
+sub flush_links {
   my $backup = $log_file . ".backup";
 
   unlink $backup;
@@ -96,6 +96,10 @@ END {
   else {
     rename $backup, $log_file;
   }
+}
+
+END {
+  flush_links();
 }
 
 #------------------------------------------------------------------------------
@@ -413,6 +417,22 @@ sub link_set_head_type {
   $link_rec->[PAGE_TYPE] = $type;
   $link_rec->[CHECK_TIME] = time();
 }
+
+#------------------------------------------------------------------------------
+# Periodically flush links to disk.
+
+POE::Session->new
+  ( _start => sub {
+      # Flush links in 15 minutes.
+      $_[KERNEL]->delay( flush_links => 15 * 60 );
+    },
+
+    flush_links => sub {
+      # And every half hour thereafter.
+      $_[KERNEL]->delay( flush_links => 30 * 60 );
+      flush_links();
+    },
+  );
 
 #------------------------------------------------------------------------------
 1;
