@@ -146,7 +146,7 @@ foreach my $mud (get_names_by_type('mud')) {
           set_doing => sub {
             my ($kernel, $heap) = @_[KERNEL, RUNSTATE];
             $heap->{interactor}->put
-	      ( "\@doing logging urls at <http://poe.dynodns.net:32080/>"
+              ( "\@doing logging urls at http://catbear.dyndns.org:8888/"
               );
             $kernel->delay( set_doing => 60 );
           },
