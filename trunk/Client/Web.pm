@@ -27,6 +27,9 @@ sub MAX_GET_SIZE   () { 4096 }
 sub CHECK_PERIOD   () { 3600 }           # seconds between staleness checks
 sub MAX_FRESH_AGE  () { 3600 * 24 * 7 }  # seconds between link recheckes
 
+sub RESOLVER_TIMEOUT () { 30 }
+sub HTTP_TIMEOUT     () { 30 }
+
 #------------------------------------------------------------------------------
 # Set up components that will help us out.
 
@@ -36,7 +39,7 @@ sub MAX_FRESH_AGE  () { 3600 * 24 * 7 }  # seconds between link recheckes
 
 POE::Component::Client::DNS->spawn
   ( Alias   => 'resolver',
-    Timeout => 30,
+    Timeout => RESOLVER_TIMEOUT,
   );
 
 # Fetch HTTP requests.
@@ -46,7 +49,7 @@ POE::Component::Client::HTTP->spawn
     Agent   =>
     "Mozilla/5.0 (X11; U; FreeBSD i386; en-US; rv:0.9.4) Gecko/20010928",
     MaxSize => MAX_GET_SIZE,
-    Timeout => 10,
+    Timeout => HTTP_TIMEOUT,
   );
 
 # Job queue to limit the number of simultaneous links to check.
