@@ -12,8 +12,7 @@ use Util::Conf;
 
 use vars qw(@ISA @EXPORT);
 @ISA    = qw(Exporter);
-@EXPORT = qw( FLUSH_FIRST_MINUTES FLUSH_REST_MINUTES
-              LINK DESC USER TIME PAGE_TITLE PAGE_DESC
+@EXPORT = qw( LINK DESC USER TIME PAGE_TITLE PAGE_DESC
               PAGE_KEYS PAGE_TIME PAGE_SIZE PAGE_TYPE
               CHECK_TIME CHECK_STATUS MENTION_COUNT
               REDIRECT FORA
@@ -28,9 +27,6 @@ use vars qw(@ISA @EXPORT);
 
 #------------------------------------------------------------------------------
 # exported constants
-
-sub FLUSH_FIRST_MINUTES () { 30 }  # First flush after N minutes.
-sub FLUSH_REST_MINUTES  () { 60 }  # Subsequent flushes after N minutes.
 
 sub LINK          () {  0 }
 sub DESC          () {  1 }
@@ -54,73 +50,36 @@ sub FORA          () { 14 }
 use vars qw( %id_by_link %link_by_id $link_seq @recent $log_file );
 
 BEGIN {
-  $log_file = './links.list';
-
-  unless (-e $log_file) {
-    open LOG_FILE, ">$log_file" or die "can't create $log_file: $!";
-    close LOG_FILE;
-  }
-
-  open LOG_FILE, "<$log_file" or die "can't read $log_file: $!";
-  while (<LOG_FILE>) {
-    chomp;
-    my @link = split /\t/;
-    my $id   = shift @link;
-
-    # Fix up late things.
-    $link[USER] =~ s/\,$//;
-    $link[MENTION_COUNT] = 1
-      unless $link[MENTION_COUNT];
-    $link[FORA] = 'global'
-      unless defined($link[FORA]) and length($link[FORA]);
-    $link[TIME] = 0 unless defined($link[TIME]) and $link[TIME] =~ /^\d+$/;
-    $link[CHECK_TIME] = 0
-      unless defined($link[CHECK_TIME]) and $link[CHECK_TIME] =~ /^\d+$/;
-
-    # Store the link by its unique ID.
-    $link_by_id{$id} = \@link;
-
-    # Record ID by link, but partition links by fora.  This is where
-    # forum partitioning comes in.
-    $id_by_link{$link[LINK]} = $id;
-
-    # So new links are added with new IDs.
-    $link_seq = $id;
-  }
-  close LOG_FILE or warn "can't close $log_file: $!";
-}
-
-sub flush_links {
-  my $backup = $log_file . ".backup";
-
-  unlink $backup;
-  rename $log_file, $backup;
-
-  if (open LOG_FILE, ">$log_file") {
-    local $^W = 0;
-
-    foreach my $id (sort { $a <=> $b } keys %link_by_id) {
-      my $link = $link_by_id{$id};
-      print LOG_FILE join("\t", $id, @$link), "\n";
-    }
-    close LOG_FILE;
-  }
-  else {
-    rename $backup, $log_file;
-  }
+  # Set up the database connection here, or something.
 }
 
 END {
-  flush_links();
+  # Any shutdown stuff we need goes here.
 }
 
 #------------------------------------------------------------------------------
 # Get an ID for a link.
 
 sub get_id_by_link {
-  my $link = shift;
-  return $id_by_link{$link} if exists $id_by_link{$link};
-  return undef;
+  my($clique_id, $uri) = @_;
+  my $sth = $dbh->prepare_cached(<<SQL);
+	SELECT link.sequence AS ID
+	FROM link, url, uri
+	WHERE link.clique = ?
+	AND link.url = url.sequence
+	AND url.uri = ?
+SQL
+  $sth->execute($clique_id, $uri);
+  my $link = $sth->fetchrow_arrayref({})->{ID};
+  return $link;
+}
+
+#------------------------------------------------------------------------------
+# Increment the 'mentioned' count of a link by 1.
+sub link_id_mention {
+  my $link_id = shift;
+  # ...
+  return $link_id;
 }
 
 #------------------------------------------------------------------------------
@@ -129,51 +88,64 @@ sub get_id_by_link {
 sub get_link_id {
   my ($fora, $user, $link, $description) = @_;
 
-  my $id = get_id_by_link($link);
+  my $link_id = get_id_by_link($link);
   if (defined $id) {
-    $link_by_id{$id}->[MENTION_COUNT]++;
-    return get_id_by_link($link);
+    return link_id_mention($id);
   }
 
-  $id_by_link{$link} = ++$link_seq;
+  my $sth_id = $dbh->prepare_cached(<<SQL);
+	SELECT NEXTVAL ('link_sequence_seq') AS ID
+SQL
+  $sth_id->execute();
+  my $link_seq = $sth_id->fetchrow_arrayref({})->{ID};
 
-  $link_by_id{$link_seq} =
-    [ $link,         # LINK
-      $description,  # DESC
-      $user,         # USER
-      time(),        # TIME
-      undef,         # PAGE_TITLE
-      undef,         # PAGE_DESC
-      undef,         # PAGE_KEYS
-      undef,         # PAGE_TIME
-      undef,         # PAGE_SIZE
-      undef,         # PAGE_TYPE
-      0,             # CHECK_TIME
-      undef,         # CHECK_STATUS
-      1,             # MENTION_COUNT
-      undef,         # REDIRECT
-    ];
+  # XXX: Lots of work here.  Add a url, add a link?
+  #      Clique aware?
+#  $link_by_id{$link_seq} =
+#    [ $link,         # LINK
+#      $description,  # DESC
+#      $user,         # USER
+#      time(),        # TIME
+#      undef,         # PAGE_TITLE
+#      undef,         # PAGE_DESC
+#      undef,         # PAGE_KEYS
+#      undef,         # PAGE_TIME
+#      undef,         # PAGE_SIZE
+#      undef,         # PAGE_TYPE
+#      0,             # CHECK_TIME
+#      undef,         # CHECK_STATUS
+#      1,             # MENTION_COUNT
+#      undef,         # REDIRECT
+#    ];
 
   # Blow away caches.
+
   undef @recent;
 
-  # Request a lookup.
-  $poe_kernel->post( linkchecker => enqueue => 'ignore this' => $link_seq );
+  # Request a lookup. # XXX: Why?
+#  $poe_kernel->post( linkchecker => enqueue => 'ignore this' => $link_seq );
 
   return $link_seq;
 }
 
 #------------------------------------------------------------------------------
-# Get a link by its ID.  Creates a link record 
+# Get a link by its ID.
 
 sub get_link_by_id {
-  my $id = shift;
-  return $link_by_id{$id}->[LINK] if exists $link_by_id{$id};
-  return undef;
+  my($link_id) = @_;
+  my $sth = $dbh->prepare_cached(<<SQL);
+	SELECT url.uri AS LINK
+	FROM link, url
+	WHERE link.sequence = ?
+	AND link.url = url.sequence
+SQL
+  return $sth->fetchrow_arrayref({})->{LINK};
 }
 
 #------------------------------------------------------------------------------
 # Get a link object by its ID.
+# XXX: This has to be emulated with a SELECT, several joins, and a complex
+#      object.
 
 sub get_link_obj_by_id {
   my $id = shift;
@@ -185,6 +157,7 @@ sub get_link_obj_by_id {
 
 # Fetch stale links.  Stale links are ones that have been checked, but
 # they haven't been checked recently.
+# XXX: Hmm, query math required here against check_time.
 
 sub get_stale_links {
   my $age = shift;
@@ -199,6 +172,7 @@ sub get_stale_links {
 }
 
 # Unchecked links are ones that have never been checked before.
+# XXX: And some interesting query magic here, too.  But simpler.
 
 sub get_unchecked_links {
   my @unchecked =
@@ -214,6 +188,7 @@ sub get_unchecked_links {
 
 #------------------------------------------------------------------------------
 # Get up to N of the most recent links.
+# XXX: Date math.
 
 sub get_recent_links {
   my $limit = shift;
@@ -230,6 +205,7 @@ sub get_recent_links {
 
 #------------------------------------------------------------------------------
 # Get links changed since a time.
+# More date math.
 
 sub get_links_since {
   my $time = shift;
@@ -246,6 +222,7 @@ sub get_links_since {
 
 #------------------------------------------------------------------------------
 # Accessors.
+# XXX: Whee, SQL.
 
 sub link_set_status {
   my ($link_id, $status) = @_;
@@ -314,20 +291,6 @@ sub link_set_head_type {
   $link_rec->[PAGE_TYPE] = $type;
   $link_rec->[CHECK_TIME] = time();
 }
-
-#------------------------------------------------------------------------------
-# Periodically flush links to disk.
-
-POE::Session->new
-  ( _start => sub {
-      $_[KERNEL]->delay( flush_links => FLUSH_FIRST_MINUTES * 60 );
-    },
-
-    flush_links => sub {
-      $_[KERNEL]->delay( flush_links => FLUSH_REST_MINUTES * 60 );
-      flush_links();
-    },
-  );
 
 #------------------------------------------------------------------------------
 1;
