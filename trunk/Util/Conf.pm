@@ -76,7 +76,7 @@ sub flush_section {
       if exists $config{$item{name}};
 
     my $name = delete $item{name};
-    $config{$name} = { %item, type => $section };
+    $config{$name} = { %item, _type => $section };
   }
 }
 
@@ -138,7 +138,7 @@ sub get_names_by_type {
   my @names;
 
   while (my ($name, $item) = each %config) {
-    next unless $item->{type} eq $type;
+    next unless $item->{_type} eq $type;
     push @names, $name;
   }
 
