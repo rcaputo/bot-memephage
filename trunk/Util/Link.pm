@@ -29,7 +29,7 @@ use vars qw(@ISA @EXPORT);
 # Helper function to record links.
 
 
-my (%id_by_link, %link_by_id, $link_seq, @recent, $log_file);
+use vars qw( %id_by_link %link_by_id $link_seq @recent $log_file );
 
 BEGIN {
   $log_file = './links.list';
