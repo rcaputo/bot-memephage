@@ -4,7 +4,7 @@
 
 use strict;
 
-package PoeWebClient;
+package Client::Web;
 
 use POE;
 

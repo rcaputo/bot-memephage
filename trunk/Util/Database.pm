@@ -8,7 +8,7 @@ use strict;
 use Exporter;
 
 use POE;
-use PoeConfThing;
+use Util::Conf;
 
 use vars qw(@ISA @EXPORT);
 @ISA    = qw(Exporter);

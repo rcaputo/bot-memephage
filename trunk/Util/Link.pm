@@ -8,8 +8,8 @@ use strict;
 use Exporter;
 
 use POE;
-use PoeWebStuff;
-use PoeConfThing;
+use Util::Web;
+use Util::Conf;
 use PoeLinkDatabase;
 
 use vars qw(@ISA @EXPORT);

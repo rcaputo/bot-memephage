@@ -3,7 +3,7 @@
 # Rocco's POE web server helper functions.  Do URL en/decoding.  Load
 # static pages, and do template things with them.
 
-package PoeWebStuff;
+package Util::Web;
 
 use strict;
 use vars qw(@ISA @EXPORT);

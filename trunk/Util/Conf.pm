@@ -2,7 +2,7 @@
 
 # Configuration reading and holding.
 
-package PoeConfThing;
+package Util::Conf;
 
 use strict;
 use Exporter;

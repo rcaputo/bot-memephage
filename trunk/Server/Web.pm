@@ -4,7 +4,7 @@
 
 use strict;
 
-package PoeWebServer;
+package Server::Web;
 
 use Socket;
 use HTTP::Response;
@@ -14,8 +14,8 @@ use POE::Preprocessor;
 use POE::Component::Server::TCP;
 use POE::Filter::HTTPD;
 
-use PoeConfThing;
-use PoeWebStuff;
+use Util::Conf;
+use Util::Web;
 use PoeLinkManager;
 
 # Dumps the request to stderr.

@@ -2,7 +2,7 @@
 
 # Rocco's PerlMud bot stuff.
 
-package PoeMudClient;
+package Client::MUD;
 
 use strict;
 
@@ -13,10 +13,9 @@ sub MSG_PAGED     () { 0x02 }
 sub MSG_WHISPERED () { 0x04 }
 sub MSG_EMOTED    () { 0x08 }
 
-use PoeConfThing;
+use Util::Conf;
 use PoeLinkManager;
-use PoeWebServer;
-use PoeUtils;
+use Server::Web;
 
 # Debug stuff.
 # test_parser_and_exit();

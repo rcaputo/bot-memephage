@@ -2,7 +2,7 @@
 
 # Rocco's IRC bot stuff.
 
-package PoeIrcClient;
+package Client::IRC;
 
 use strict;
 
@@ -13,10 +13,9 @@ sub MSG_SPOKEN    () { 0x01 }
 sub MSG_WHISPERED () { 0x02 }
 sub MSG_EMOTED    () { 0x04 }
 
-use PoeConfThing;
+use Util::Conf;
 use PoeLinkManager;
-use PoeWebServer;
-use PoeUtils;
+use Server::Web;
 
 # -><- Nickname adjusting and reclaiming.
 

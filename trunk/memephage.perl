@@ -18,13 +18,13 @@ use POE::Driver::SysRW;
 use POE::Filter::Line;
 use POE::Preprocessor;
 
-use PoeConfThing;
+use Util::Conf;
 
-#use PoeMudClient;
-use PoeIrcClient;
+#use Client::MUD;
+use Client::IRC;
 
-use PoeWebServer;
-use PoeWebClient;
+use Server::Web;
+use Client::Web;
 
 $poe_kernel->run();
 exit 0;
