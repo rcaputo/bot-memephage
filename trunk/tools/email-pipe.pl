@@ -2,6 +2,7 @@
 
 # $Id$
 use strict;
+use LWP::UserAgent ();
 
 # the submission url to use
 my $url = 'http://64.53.6.49:8888/post';
