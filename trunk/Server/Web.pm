@@ -205,6 +205,16 @@ sub httpd_session_got_query {
     return;
   }
 
+  ### Stale N.  For debugging.
+
+  if ($url =~ /^\/stale\/?$/) {
+    my @stale = get_stale_links( 3600 * 24 * 7 );
+    my $title = "Stale links...";
+    my $response = build_log($title, \@stale);
+    $heap->{wheel}->put($response);
+    return;
+  }
+
   ### Root page.
 
   if ($url eq '/') {
