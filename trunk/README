@@ -1,0 +1,7 @@
+It's not very good code. :)
+
+It will create a links.list file in the current directory.  That file
+will be read entirely into memory at startup, and it won't be touched
+again until the bot shuts down.
+
+rcc: Fixed the path for links.list.  Duh.
