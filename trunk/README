@@ -9,6 +9,8 @@ again until the bot shuts down.
 rcc: Fixed the path for links.list.  Duh.
 coral: schema.text is in cvs and will be postgres-ized someday.
 coral: html encoding of html output is useful. done.
+coral: POST queries to http://64.53.6.49/post work now.
+coral: added tools/email-pipe.pl for forwarding email to memephage!
 
 ** Feature ideas:
 
