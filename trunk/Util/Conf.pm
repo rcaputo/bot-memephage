@@ -31,6 +31,7 @@ my %define =
     weblog =>
     { name    => SCALAR | REQUIRED,
       iface   => SCALAR,
+      ifname  => SCALAR,
       port    => SCALAR | REQUIRED,
       logfile => SCALAR | REQUIRED,
     },
