@@ -10,7 +10,7 @@ use Exporter;
 use POE;
 use Util::Web;
 use Util::Conf;
-use Database;
+use Util::Database;
 
 use vars qw(@ISA @EXPORT);
 @ISA    = qw(Exporter);

@@ -2,7 +2,7 @@
 
 # Manage the link database.
 
-package Database;
+package Util::Database;
 
 use strict;
 use Exporter;
