@@ -7,6 +7,11 @@ $Id$
 rcc: Replaced the semi-live memephage.conf file with a commented one
      that doesn't incriminate anyone.
 
+rcc: Migrated memephage to SourceForge so that others can hack on it.
+     Migrated TODO to SF task tracker.
+     Renamed memephage.conf to memephage.conf-dist so it doesn't
+     clobber users' settings on update.
+
 ----------
 2002-05-08
 ----------
