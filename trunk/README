@@ -9,3 +9,8 @@ again until the bot shuts down.
 rcc: Fixed the path for links.list.  Duh.
 coral: schema.text is in cvs and will be postgres-ized someday.
 coral: html encoding of html output is useful. done.
+
+** Feature ideas:
+
+[coral]: generate thumbnails and show them
+         (disabled by default, enabled by cgi ?f=b parameter)
