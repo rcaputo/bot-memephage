@@ -225,10 +225,7 @@ sub parse_link_from_message {
     push @link, $1;
   }
 
-  $description =~ s/^\s*\[link\]\s*//;
-  $description =~ s/\s*\[link\]\s*$//;
-  $description =~ s/^[\s\.\|\#\:\-]+//;
-  $description =~ s/[\s\.\|\#\:\-]+$//;
+  $description =~ s/\s+/ /g;
 
   return ($description, @link);
 }
