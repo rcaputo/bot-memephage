@@ -175,14 +175,11 @@ sub check_got_head {
     return;
   }
 
-  # Don't bother if it's not successful.
-  return unless $response->is_success();
-
-  DEBUG and warn "parsing HEAD for <$heap->{redirect}>\n";
-
   my $type = 'text/guessed';
   my $size = "(unknown)";
   if ($response->is_success()) {
+    DEBUG and warn "parsing HEAD for <$heap->{redirect}>\n";
+
     if (defined $response->last_modified()) {
       link_set_head_time($link_id, str2time($response->date(), 'GMT'));
     }
@@ -198,6 +195,10 @@ sub check_got_head {
     if (defined $response->title()) {
       link_set_title($link_id, $response->title());
     }
+  }
+  else {
+    # HEAD 405: Method Not Allowed.  We'll try GET anyway.
+    return unless $heap->code() == 405;
   }
 
   # Try to fetch more information from the page's headers.
@@ -251,9 +252,16 @@ sub check_got_body {
   $type = 'text/guessed' unless defined $type;
   link_set_head_type($link_id, $response->content_type());
 
-  my $size = $response->content_length();
-  $size = "(unknown)" unless defined $size;
-  link_set_head_size($link_id, $response->content_length());
+  # Update the response code if this was a successful full GET.  Do it
+  # anyway if the previous fetch didn't return a size.
+
+  my $previous_size = link_get_head_size($link_id);
+  if ( $response->code() == 200 or
+       !defined($previous_size) or
+       !$previous_size
+     ) {
+    link_set_head_size($link_id, "(unknown)");
+  }
 
   if (defined $response->title()) {
     link_set_title($link_id, $response->title());
