@@ -35,6 +35,10 @@ my %define =
       port    => SCALAR | REQUIRED,
       logfile => SCALAR | REQUIRED,
     },
+    database =>
+    { name    => SCALAR | REQUIRED,
+      type    => SCALAR | REQUIRED,
+    },
     irc =>
     { name    => SCALAR | REQUIRED,
       server  => LIST   | REQUIRED,
