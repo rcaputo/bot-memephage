@@ -34,12 +34,19 @@ macro table_header (<header>) {
 #------------------------------------------------------------------------------
 # A web server.
 
-# Start an HTTPD session.
+# Start an HTTPD session.  Note that this handler receives both the
+# local bind() address ($my_host) and the public server address
+# ($my_ifname).  It uses $my_ifname to build HTML that the outside
+# world can see.
+
 sub httpd_session_started {
   my ( $heap,
        $socket, $remote_address, $remote_port,
        $my_name, $my_host, $my_port, $my_ifname
      ) = @_[HEAP, ARG0..ARG6];
+
+  # TODO: I think $my_host is obsolete.  Maybe it can be removed, and
+  # $my_ifname can be used exclusively?
 
   $heap->{my_host} = $my_host;
   $heap->{my_port} = $my_port;
@@ -374,7 +381,17 @@ foreach my $server (get_names_by_type(WEBLOG_TYPE)) {
             got_flush => \&httpd_session_flushed,
             got_query => \&httpd_session_got_query,
             got_error => \&httpd_session_got_error,
-            do => sub { goto &{splice(@_, ARG0, 1)} if ref($_[ARG0]) =~ /CODE/ },
+            do => sub {goto &{splice(@_, ARG0, 1)} if ref($_[ARG0]) =~ /CODE/},
+
+            # Note the use of ifname here in ARG6.  This gives the
+            # responding session knowledge of its host name for
+            # building HTML responses.  Most of the time it will be
+            # identical to iface, but sometimes there may be a reverse
+            # proxy, firewall, or NATD between the address we bind to
+            # and the one people connect to.  In that case, ifname is
+            # the address the outside world sees, and iface is the one
+            # we've bound to.
+
             [ @_[ARG0..ARG2], $server,
               $conf{iface}, $conf{port}, $conf{ifname},
             ],
