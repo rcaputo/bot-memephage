@@ -14,6 +14,7 @@ CREATE TABLE url (
 	created		TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+-- not currently used
 CREATE TABLE url_data (
 	sequence	SERIAL PRIMARY KEY,
 	url		INTEGER NOT NULL UNIQUE REFERENCES url,
@@ -23,6 +24,7 @@ CREATE TABLE url_data (
 	last_updated	TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+-- not currently used
 CREATE TABLE "user" (
 	sequence	SERIAL PRIMARY KEY,
 	clique		INTEGER NOT NULL REFERENCES clique,
@@ -41,11 +43,13 @@ CREATE TABLE link (
 	UNIQUE(clique, url)
 );
 
+-- not currently used
 CREATE TABLE rating (
 	sequence	SERIAL PRIMARY KEY,
 	rate		REAL DEFAULT 0 NOT NULL
 );
 
+-- not currently used
 CREATE TABLE rate_link (
        	sequence	SERIAL PRIMARY KEY,
 	rating		INTEGER NOT NULL REFERENCES rating,
@@ -55,6 +59,7 @@ CREATE TABLE rate_link (
 	UNIQUE (link, "user")
 );
 
+-- not currently used
 CREATE TABLE keyword (
 	sequence	SERIAL PRIMARY KEY,
 	clique		INTEGER NOT NULL REFERENCES clique,
@@ -63,6 +68,7 @@ CREATE TABLE keyword (
 	UNIQUE(clique, keyword)
 );
 
+-- not currently used
 CREATE TABLE keyword_link (
 	sequence	SERIAL PRIMARY KEY,
 	keyword		INTEGER NOT NULL REFERENCES keyword,
@@ -72,6 +78,7 @@ CREATE TABLE keyword_link (
 	UNIQUE (keyword, link)
 );
 
+-- not currently used
 CREATE TABLE note (
 	sequence	SERIAL PRIMARY KEY,
 	link		INTEGER NOT NULL REFERENCES link,
@@ -81,12 +88,14 @@ CREATE TABLE note (
 	created		TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+-- not currently used
 CREATE TABLE checkup (
 	sequence	SERIAL PRIMARY KEY,
 	url		INTEGER NOT NULL UNIQUE REFERENCES url,
 	last_check	TIMESTAMP
 );
 
+-- not currently used
 CREATE TABLE setup (
 	sequence	SERIAL PRIMARY KEY,
 	setting_name	TEXT NOT NULL UNIQUE,
@@ -94,6 +103,7 @@ CREATE TABLE setup (
 	description	TEXT
 );
 
+-- not currently used
 CREATE TABLE cookies (
 	sequence	SERIAL PRIMARY KEY,
 	domain		TEXT NOT NULL,
