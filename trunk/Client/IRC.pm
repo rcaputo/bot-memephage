@@ -190,6 +190,11 @@ foreach my $server (get_names_by_type('irc')) {
 sub soak_up_links {
   my ($logto, $who, $msg) = @_;
 
+  # Indigoid supplied these regexps to extract colors.
+  $msg =~ s/[\x02\x0F\x11\x12\x16\x1d\x1f]//g;    # Regular attributes.
+  $msg =~ s/\x03[0-9,]*//g;                       # mIRC colors.
+  $msg =~ s/\x04[0-9a-f]+//ig;                    # Other colors.
+
   my ($description, @links) = parse_link_from_message($msg);
   $description = "(none)"
     unless defined $description and length $description;
