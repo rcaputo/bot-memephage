@@ -42,6 +42,12 @@ weblog
 
 	port	10000
 
+	# Login and password to use for http authentication.  If
+	# either is omitted, no authentication is done.
+
+	login	memephage
+	passwd	noroboto
+
         # The flat file where links will be stored.  Eventually this
         # should move to a "database" section and be replaced with the
         # proper database's internal code name.

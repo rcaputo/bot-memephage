@@ -42,8 +42,8 @@ macro table_header (<header>) {
 sub httpd_session_started {
   my ( $heap,
        $socket, $remote_address, $remote_port,
-       $my_name, $my_host, $my_port, $my_ifname
-     ) = @_[HEAP, ARG0..ARG6];
+       $my_name, $my_host, $my_port, $my_ifname, $login, $passwd,
+     ) = @_[HEAP, ARG0..ARG8];
 
   # TODO: I think $my_host is obsolete.  Maybe it can be removed, and
   # $my_ifname can be used exclusively?
@@ -52,6 +52,8 @@ sub httpd_session_started {
   $heap->{my_port} = $my_port;
   $heap->{my_name} = $my_name;
   $heap->{my_inam} = $my_ifname;
+  $heap->{login}   = $login;
+  $heap->{passwd}  = $passwd;
 
   $heap->{remote_addr} = inet_ntoa($remote_address);
   $heap->{remote_port} = $remote_port;
@@ -231,12 +233,14 @@ sub httpd_session_got_query {
     return;
   }
 
-  ### Do basic authentication.
+  ### Do basic authentication if specified in config file.
 
-  my ($login, $password) = $request->authorization_basic();
+  my $do_auth = (defined($heap->{login}) and defined($heap->{passwd}));
+  my ($login, $password) = $request->authorization_basic() if $do_auth;
 
-  unless ( defined($login) and ($login eq 'memephage') and
-           defined($password) and ($password eq 'noroboto')
+  unless ( ! $do_auth or
+	   (defined($login) and ($login eq $heap->{login}) and
+	    defined($password) and ($password eq $heap->{passwd}))
          )
   {
     my $response = new HTTP::Response(401);
@@ -504,6 +508,7 @@ foreach my $server (get_names_by_type(WEBLOG_TYPE)) {
 
             [ @_[ARG0..ARG2], $server,
               $conf{iface}, $conf{port}, $conf{ifname},
+	      $conf{login}, $conf{passwd},
             ],
           );
       },

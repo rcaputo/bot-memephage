@@ -33,6 +33,8 @@ my %define =
       iface   => SCALAR,
       ifname  => SCALAR,
       port    => SCALAR | REQUIRED,
+      login   => SCALAR,
+      passwd  => SCALAR,
       logfile => SCALAR | REQUIRED,
     },
     database =>
