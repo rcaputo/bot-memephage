@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use lib '/home/troc/perl/poe';
+use lib '/home/rcc/lib';
 
 use POE::Kernel;
 use POE::Wheel::SocketFactory;
