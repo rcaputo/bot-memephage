@@ -1,33 +1,85 @@
-It's not very good code. :)
+$Id$
 
-It will create a links.list file in the current directory.  That file
-will be read entirely into memory at startup, and it won't be touched
-again until the bot shuts down.
+-----
+About
+-----
 
-[coral]: In the near future, this will all be tied through Postgres.
+Memephage is a bot (IRC and/or MUD) that identifies URLs in casual
+conversation and logs them.  Its URL log is visible from its
+integrated web server.
 
-rcc: Fixed the path for links.list.  Duh.
-coral: schema.text is in cvs and will be postgres-ized someday.
-coral: html encoding of html output is useful. done.
-coral: POST queries to http://64.53.6.49/post work now.
-coral: added tools/email-pipe.pl for forwarding email to memephage!
+Memephage can also extract URLs from e-mail, and its title web page
+includes a JavaScript bookmarklet that can be used to submit links
+directly from a browser's "personal toolbar".
 
-2002-02-12
+Links gathered by memephage are verified by its integrated web client.
+In the pracess, the bot gathers a page or resource's MIME type, size,
+title, description, and keywords.  This information is rather
+unceremoniously displayed in the log:
 
-rcc: Added /robots.txt response.
-rcc: Added basic authentication (login/password hardcoded for now).
+  Link:        http://www.satirewire.com/news/may02/roborats.shtml
+  From:        Brian -- Tue May 7 21:21:30 2002 GMT -- mentioned 1 time
+  Context:     hurls [link]
+  Title:       SatireWire | PENTAGON INSISTS REAL RATS NOT BEING USED
+  Description: Under withering fire from animal rights activists, who
+               blasted the Pentagon's plans to fit live rats with
+               electrodes so they could be steered toward hidden bombs
+               or disaster victims, the U.S. Defense Department today
+               promised that actual rats will not be used.
+  Keywords:    bush foreign policy, business news, comedy, first
+               trimester, funny, george w bush, humor, internet humor,
+               middle east policy, mood swings, morning sickness,
+               parody, pregnancy, president bush, satire, satire wire,
+               technology, the fnwire, vice president dick cheney,
+               what to expect
+  Status:      Tue May 7 21:21:32 2002 GMT -- GET 200: OK
+  Content:     text/html (unknown size)
 
-** To do:
+As if that weren't enough, it re-verifies its links weekly, updating
+their Status as it changes.
 
-[coral]: Set up per-mailing-list aliases or something. RRE, progstone.
-         memephage+rre@ maps to POST rre=<msg>
-         multiple messages - outlook attached message support!  MIME!
+------------
+Requirements
+------------
 
-** Feature ideas:
+Perl 5.005, but Perl 5.6.1 or newer is recommended.
 
-[coral]: generate thumbnails and show them
-         (disabled by default, enabled by cgi ?f=b parameter)
+You'll need the following Perl modules.
 
-[coral]: submit urls to the Internet archive (web.archive.org)
-         http://www.alexa.com/cgi-bin/request_bot.cgi?url=$url&redirect=$url
-         definitely some downsides to this one.
+  Filter::Util::Call
+  Time::HiRes
+  POE
+  POE::Component::IRC
+  POE::Component::Client::DNS
+  POE::Component::Client::HTTP
+  URI::Heuristic
+
+----------
+Setting up
+----------
+
+Edit memephage.conf.
+Run memephage.perl.
+
+To do.
+
+------
+Errors
+------
+
+* IRC client (foo): socket error occurred: Can't assign requested address
+
+  The most likely cause of this is an unknown host name, either for a
+  local machine or a remote IRC server.  If you have multiple servers
+  specified, the bot will try the next server in approximately one
+  minute.
+
+-------
+Support
+-------
+
+None yet, sorry.
+
+---
+End
+---

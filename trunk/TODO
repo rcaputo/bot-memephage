@@ -1,0 +1,43 @@
+$Id$
+
+--------
+Refactor
+--------
+
+It's not very good code. :)
+
+------------------
+Database Back Ends
+------------------
+
+Currently memephage creates a flat links.list file in the current
+directory.  That file is read entirely into memory at startup, and
+large databases can take several dozens of megabytes.
+
+coral: In the near future, this will all be tied through Postgres.
+
+coral: schema.text is in cvs and will be postgres-ized someday.
+
+-------------
+Mailing Lists
+-------------
+
+coral: Set up per-mailing-list aliases or something. RRE,
+       progstone. memephage+rre@ maps to POST rre=<msg> multiple
+       messages - outlook attached message support!  MIME!
+
+------------
+Future Ideas
+------------
+
+coral: Generate thumbnails for linked images, and show them inline in
+       place of descriptions.  Inline showing disabled by default,
+       enabled perhaps with a ?f=b parameter.
+
+coral: Submit URLs to the Internet archive (web.archive.org)
+       http://www.alexa.com/cgi-bin/request_bot.cgi?url=$url&redirect=$url
+       There definitely are some downsides to this one.
+
+---
+End
+---

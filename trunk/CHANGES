@@ -1,0 +1,31 @@
+$Id$
+
+----------
+2002-05-08
+----------
+
+rcc: Added private message handling.  Untested.
+
+rcc: Broke README into proper TODO, CHANGES and README files.
+
+rcc: Fixed the path for links.list.  Duh.
+
+coral: schema.text is in cvs and will be postgres-ized someday.
+
+coral: html encoding of html output is useful. done.
+
+coral: POST queries to http://64.53.6.49/post work now.
+
+coral: added tools/email-pipe.pl for forwarding email to memephage!
+
+----------
+2002-02-12
+----------
+
+rcc: Added /robots.txt response.
+
+rcc: Added basic authentication (login/password hardcoded for now).
+
+-----
+Begin
+-----
