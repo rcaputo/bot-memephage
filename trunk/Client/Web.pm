@@ -20,6 +20,9 @@ use POE::Component::Client::HTTP;
 
 use PoeLinkManager;
 
+# enable more output
+sub DEBUG () { 0 }
+
 sub MAX_GET_SIZE   () { 4096 }
 sub CHECK_PERIOD   () { 3600 }           # seconds between staleness checks
 sub MAX_FRESH_AGE  () { 3600 * 24 * 7 }  # seconds between link recheckes
@@ -43,6 +46,7 @@ POE::Component::Client::HTTP->spawn
     Agent   =>
     "Mozilla/5.0 (X11; U; FreeBSD i386; en-US; rv:0.9.4) Gecko/20010928",
     MaxSize => MAX_GET_SIZE,
+    Timeout => 10,
   );
 
 # Job queue to limit the number of simultaneous links to check.
@@ -55,6 +59,7 @@ POE::Component::JobQueue->spawn
     },
     Worker      => sub {
       my ($postback, $link) = @_;
+      DEBUG and warn "spawning a worker to handle <$link>\n";
       POE::Session->create
         ( inline_states =>
           { _start   => \&check_start,
@@ -84,6 +89,8 @@ sub check_start {
     return;
   }
 
+  DEBUG and warn "trying to resolve host <$host>\n";
+
   $kernel->post( resolver => resolve => got_name => $host => 'ANY' );
 }
 
@@ -96,6 +103,7 @@ sub check_got_name {
     return;
   }
 
+  DEBUG and warn "host for <$heap->{link}> resolved ok\n";
   link_set_status( $heap->{link}, "Host resolved ok." );
 
   # Build a HEAD request.
@@ -103,6 +111,8 @@ sub check_got_name {
   my $url = URI->new( $heap->{link} );
   $url = uf_uri($url);
   $head_request->url( $url );
+
+  DEBUG and warn "fetching HEAD for <$heap->{link}>\n";
 
   # Get HEAD from the server.
   $kernel->post( fetcher => request => got_head => $head_request );
@@ -153,9 +163,16 @@ sub check_got_head {
 
     link_set_redirect($link, $location);
 
+    DEBUG and warn "redirecting from <$heap->{link}> to <$location>\n";
+
     $kernel->post( fetcher => request => got_head => $referral );
     return;
   }
+
+  # Don't bother if it's not successful.
+  return unless $response->is_success();
+
+  DEBUG and warn "parsing HEAD for <$heap->{redirect}>\n";
 
   my $type = 'text/guessed';
   my $size = "(unknown)";
@@ -187,6 +204,8 @@ sub check_got_head {
     # Limit the request size.
     $body_request->push_header( Range => "bytes=0-" . MAX_GET_SIZE );
 
+    DEBUG and warn "fetching body for <$heap->{redirect}>\n";
+
     $kernel->post( fetcher => request => got_body => $body_request );
   }
 }
@@ -210,7 +229,12 @@ sub check_got_body {
                  );
 
   return unless defined $response->code();
+
+  DEBUG and warn "got BODY response for <$heap->{redirect}>\n";
+
   return unless $response->is_success();
+
+  DEBUG and warn "BODY fetch is successful for <$heap->{redirect}>\n";
 
   if (defined $response->last_modified()) {
     link_set_head_time($link, str2time($response->date(), 'GMT'));
@@ -233,6 +257,9 @@ sub check_got_body {
   if ($link ne $redirect) {
     link_set_redirect($link, $redirect);
   }
+
+  # Rocco should probably be shot for parsing HTML with regular
+  # expressions.
 
   if ($type =~ /text/i) {
     my $content = $response->content();
@@ -274,6 +301,9 @@ POE::Session->new
       # Add stale links into the mix.
       $_[KERNEL]->yield( 'check_stale' );
     },
+
+    # Run a stale-link check.
+
     check => sub {
       my $heap = $_[HEAP];
 
@@ -283,12 +313,19 @@ POE::Session->new
 
       # Enqueue a check task for each.
       foreach (@pending) {
-        $_[KERNEL]->post( linkchecker => enqueue => 'ignore' => get_link_by_id($_) );
+        $_[KERNEL]->post( linkchecker => enqueue =>
+                          ignore_response => get_link_by_id($_)
+                        );
       }
 
       # Check for stale links again in a little while.
       $_[KERNEL]->delay( check_stale => CHECK_PERIOD );
     },
+
+    # Periodically check stale links.  -><- We should not add links to
+    # $heap->{pending} if they're already in the queue.  Otherwise the
+    # queue may expand faster than links can be checked.
+
     check_stale => sub {
       my $heap = $_[HEAP];
 
@@ -300,6 +337,10 @@ POE::Session->new
 
       # Do the actual check.
       $_[KERNEL]->yield( 'check' );
+    },
+
+    # Ignore whatever linkchecker sends back to us.
+    ignore_response => sub {
     },
   );
 
