@@ -47,9 +47,11 @@ Perl 5.005, but Perl 5.6.1 or newer is recommended.
 You'll need the following Perl modules.
 
   Filter::Util::Call
+  HTML::Entities
   Time::HiRes
   POE
   POE::Component::IRC
+  POE::Component::JobQueue
   POE::Component::Client::DNS
   POE::Component::Client::HTTP
   URI::Heuristic

@@ -28,6 +28,7 @@ use Server::Web;
 foreach my $mud (get_names_by_type('mud')) {
 
   my %conf = get_items_by_name($mud);
+  my $mud_id="$conf{host}:$conf{port}";
 
   POE::NFA->spawn
     ( inline_states =>
@@ -195,7 +196,7 @@ foreach my $mud (get_names_by_type('mud')) {
 
 	    foreach my $link (@links) {
 	      next unless defined $link and length $link;
-              my $link_id = get_link_id( $mud, $speaker, $link, $description );
+              my $link_id = get_link_id( $mud, "$speaker (telnet://$mud_id)", $link, $description );
 
               # Make a shorter link if it's too long.
               if (length($link) > 75) {

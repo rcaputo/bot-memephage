@@ -18,6 +18,7 @@ use POE::Component::JobQueue;
 use POE::Component::Client::DNS;
 use POE::Component::Client::HTTP;
 
+use Util::Web;
 use Util::Link;
 
 # enable more output
@@ -193,7 +194,9 @@ sub check_got_head {
     link_set_head_size($link_id, $size);
 
     if (defined $response->title()) {
-      link_set_title($link_id, $response->title());
+      my $title=html_decode($response->title());
+      DEBUG and warn "title=$title";
+      link_set_title($link_id, $title);
     }
   }
   else {
@@ -264,7 +267,9 @@ sub check_got_body {
   }
 
   if (defined $response->title()) {
-    link_set_title($link_id, $response->title());
+    my $title=html_decode($response->title());
+    DEBUG and warn "title=$title\n";
+    link_set_title($link_id, $title);
   }
 
   my $redirect = $heap->{redirect};
@@ -281,7 +286,9 @@ sub check_got_body {
     $content =~ s/\s+/ /g;
 
     if ($content =~ m{< *title *> *(.+?) *< */ *title *>}i) {
-      link_set_title($link_id, $1);
+      my $title=html_decode($1);
+      DEBUG and warn "title=$title\n";
+      link_set_title($link_id, $title);
     }
 
     if ( $content =~

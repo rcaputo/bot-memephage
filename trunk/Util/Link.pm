@@ -51,10 +51,21 @@ sub get_link_as_table_row {
 
   return '' unless $link;
 
-  my $html =
-    ( "<p>" .
-      "<table border=0 width='100%' cellspacing=0 cellpadding=3 bgcolor='#e0e0f0'>" .
+  my $html = ( 
+      "<p>" .
+      "<table border=0 width='100%' cellspacing=0 cellpadding=3 bgcolor='#e0e0f0'>"
+    );
 
+  if (defined $link->[PAGE_TITLE] and length $link->[PAGE_TITLE]) {
+    $html .= ( "<tr>" .
+               "<th align=left valign=top width='1%'>Title:</th>" .
+               "<td width='99%'>".html_encode($link->[PAGE_TITLE])."</td>" .
+               "</tr>"
+             );
+  }
+
+
+  $html .= (
       "<tr>" .
       "<th align=left valign=top width='1%'>Link:</th>" .
       "<td width='99%'><a href='$link->[LINK]'>".html_encode($link->[LINK])."</a><td>" .
@@ -92,14 +103,6 @@ sub get_link_as_table_row {
         "<td width='99%'>".html_encode($link->[DESC])."</td>" .
         "</tr>"
       );
-  }
-
-  if (defined $link->[PAGE_TITLE] and length $link->[PAGE_TITLE]) {
-    $html .= ( "<tr>" .
-               "<th align=left valign=top width='1%'>Title:</th>" .
-               "<td width='99%'>".html_encode($link->[PAGE_TITLE])."</td>" .
-               "</tr>"
-             );
   }
 
   if (defined $link->[PAGE_DESC] and length $link->[PAGE_DESC]) {

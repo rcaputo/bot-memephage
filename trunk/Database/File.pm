@@ -261,7 +261,12 @@ sub get_links_since {
             )
     unless @recent;
 
-  my @since = grep { $link_by_id{$_}->[TIME] >= $time } @recent;
+  my @since;
+  foreach (@recent) {
+    next if $link_by_id{$_}->[TIME] < $time;
+    push @since, $_;
+  }
+
   return @since;
 }
 

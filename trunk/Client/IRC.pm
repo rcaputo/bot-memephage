@@ -160,21 +160,28 @@ foreach my $server (get_names_by_type('irc')) {
       },
 
       irc_public => sub {
-        my ($kernel, $who, $where, $msg) = @_[KERNEL, ARG0..ARG2];
+        my ($kernel, $heap, $who, $where, $msg) = @_[KERNEL, HEAP, ARG0..ARG2];
         $who = (split /!/, $who)[0];
         $where = $where->[0];
         log_event("<$who:$where> $msg");
 
-        soak_up_links($conf{logto}, $who, $msg);
+        soak_up_links
+          ( $conf{logto},
+            "$who (irc://$conf{server}->[$heap->{server_index}]/$where)",
+            $msg
+          );
       },
 
-      irc_msg => sub {
-        my ($kernel, $who, $msg) = @_[KERNEL, ARG0, ARG2];
-
+      irc_private => sub {
+        my ($kernel, $heap, $who, $msg) = @_[KERNEL, HEAP, ARG0, ARG2];
         $who = (split /!/, $who)[0];
         log_event("<$who:msg> $msg");
 
-        soak_up_links($conf{logto}, $who, $msg);
+        soak_up_links
+          ( $conf{logto},
+            "$who (irc://$conf{server}->[$heap->{server_index}]/privmsg)",
+            $msg
+          );
       },
     },
   );

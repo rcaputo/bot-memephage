@@ -10,10 +10,12 @@ use vars qw(@ISA @EXPORT);
 
 use Exporter;
 
+use HTML::Entities qw(decode_entities encode_entities);
+
 @ISA    = qw(Exporter);
 @EXPORT = qw( url_decode url_encode parse_content static_response
               dump_content dump_query_as_response base64_decode
-              html_encode
+              html_encode html_decode
             );
 
 #------------------------------------------------------------------------------
@@ -58,21 +60,13 @@ sub url_encode {
   return $data;
 }
 
-# HTML-encode data.  More theft from CGI.pm.  Translates the
-# blatantly "bad" html characters.
-sub html_encode {
-  my $data = shift;
-  return undef unless defined $data;
-  $data =~ s{&}{&amp;}gso;
-  $data =~ s{<}{&lt;}gso;
-  $data =~ s{>}{&gt;}gso;
-  $data =~ s{\"}{&quot;}gso;
-  # XXX: these bits are necessary for Latin charsets only, which is us.
-  $data =~ s{\'}{&#39;}gso;
-  $data =~ s{\x8b}{&#139;}gso;
-  $data =~ s{\x9b}{&#155;}gso;
-  return $data;
-}
+# HTML-encode data.  
+*html_decode=\&decode_entities;
+*html_encode=\&encode_entities;
+#  # XXX: these bits are necessary for Latin charsets only, which is us.
+#  $data =~ s{\'}{&#39;}gso;
+#  $data =~ s{\x8b}{&#139;}gso;
+#  $data =~ s{\x9b}{&#155;}gso;
 
 # Parse content.  This doesn't care where the content comes from; it
 # may be from the URL, in the case of GET requests, or it may be from
