@@ -49,7 +49,7 @@ POE::Component::Client::HTTP->spawn
 
 POE::Component::JobQueue->spawn
   ( Alias       => 'linkchecker',
-    WorkerLimit => 1,
+    WorkerLimit => 4,
     Passive     =>
     {
     },
