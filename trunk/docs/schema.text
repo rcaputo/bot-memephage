@@ -9,7 +9,6 @@ clique
 url
         sequence number
         uri
-        title
 
 # metadata for the urls
 url-data
