@@ -1,6 +1,25 @@
 # $Id$
 
 # Manage the link database (in Postgres).
+#
+# Public interface:
+#
+#  get_link_id($fora, $user, $link, $description)
+#  get_link_by_id($id)
+#  get_link_obj_by_id($id)
+#  get_stale_links($age)
+#  get_unchecked_links()
+#  get_recent_links($limit)
+#  get_links_since($time)
+#  link_set_status($link_id, $status)
+#  link_set_redirect($link_id, $redirect)
+#  link_set_title($link_id, $title)
+#  link_set_meta_desc($link_id, $desc)
+#  link_set_meta_keys($link_id, $keys)
+#  link_set_head_time($link_id, $time)
+#  link_get_head_size($link_id)
+#  link_set_head_size($link_id, $size)
+#  link_set_head_type($link_id, $type)
 
 package Database::Postgres;
 
@@ -50,11 +69,16 @@ sub FORA          () { 14 }
 use vars qw( $dbh @recent );
 
 BEGIN {
-  # Set up the database connection here, or something.
+  my $database = (get_names_by_type('database'))[0];
+  my %conf  = get_items_by_name($database);
+  $dbistring = $conf{dbname};
+  $dbh = DBI->connect("dbi:Pg:$dbistring",
+		      {RaiseError => 0, PrintError => 0, AutoCommit => 0});
+  die "Cannot connect to PostgreSQL database $dbistring\n" unless $dbh;
 }
 
 END {
-  # Any shutdown stuff we need goes here.
+  $dbh->disconnect;
 }
 
 #------------------------------------------------------------------------------
