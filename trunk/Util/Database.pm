@@ -87,7 +87,7 @@ BEGIN {
     # So new links are added with new IDs.
     $link_seq = $id;
   }
-  close LOG_FILE;
+  close LOG_FILE or warn "can't close $log_file: $!";
 }
 
 sub flush_links {
