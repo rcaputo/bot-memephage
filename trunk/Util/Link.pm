@@ -16,7 +16,7 @@ use vars qw(@ISA @EXPORT);
 @ISA    = qw(Exporter);
 @EXPORT = qw( get_link_as_table_row parse_link_from_message
             );
-push @EXPORT, @Database::EXPORT;
+push @EXPORT, @Util::Database::EXPORT;
 
 #------------------------------------------------------------------------------
 # Parse link and description from message.  This is independent of the
