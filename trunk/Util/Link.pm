@@ -2,7 +2,7 @@
 
 # Manage links.
 
-package PoeLinkManager;
+package Util::Link;
 
 use strict;
 use Exporter;

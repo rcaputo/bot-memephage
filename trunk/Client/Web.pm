@@ -18,7 +18,7 @@ use POE::Component::JobQueue;
 use POE::Component::Client::DNS;
 use POE::Component::Client::HTTP;
 
-use PoeLinkManager;
+use Util::Link;
 
 # enable more output
 sub DEBUG () { 0 }

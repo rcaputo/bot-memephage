@@ -14,7 +14,7 @@ sub MSG_WHISPERED () { 0x02 }
 sub MSG_EMOTED    () { 0x04 }
 
 use Util::Conf;
-use PoeLinkManager;
+use Util::Link;
 use Server::Web;
 
 # -><- Nickname adjusting and reclaiming.

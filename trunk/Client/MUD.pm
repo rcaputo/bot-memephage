@@ -14,7 +14,7 @@ sub MSG_WHISPERED () { 0x04 }
 sub MSG_EMOTED    () { 0x08 }
 
 use Util::Conf;
-use PoeLinkManager;
+use Util::Link;
 use Server::Web;
 
 # Debug stuff.

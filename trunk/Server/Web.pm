@@ -16,7 +16,7 @@ use POE::Filter::HTTPD;
 
 use Util::Conf;
 use Util::Web;
-use PoeLinkManager;
+use Util::Link;
 
 # Dumps the request to stderr.
 sub DUMP_REQUEST () { 0 }
