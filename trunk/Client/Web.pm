@@ -58,7 +58,7 @@ POE::Component::JobQueue->spawn
       POE::Session->create
         ( inline_states =>
           { _start   => \&check_start,
-            got_name => \&check_got_dns,
+            got_name => \&check_got_name,
             got_head => \&check_got_head,
             got_body => \&check_got_body,
           },
@@ -87,7 +87,7 @@ sub check_start {
   $kernel->post( resolver => resolve => got_name => $host => 'ANY' );
 }
 
-sub check_got_dns {
+sub check_got_name {
   my ($kernel, $heap) = @_[KERNEL, HEAP];
   my ($response_packet, $response_error) = @{$_[ARG1]};
 
@@ -96,21 +96,21 @@ sub check_got_dns {
     return;
   }
 
-  # The actual responses don't matter.
-  my $body_request = HTTP::Request->new( HEAD => $heap->{link} );
+  link_set_status( $heap->{link}, "Host resolved ok." );
+
+  # Build a HEAD request.
+  my $head_request = HTTP::Request->new( HEAD => $heap->{link} );
   my $url = URI->new( $heap->{link} );
   $url = uf_uri($url);
-  $body_request->url( $url );
+  $head_request->url( $url );
 
-  # Limit the request size.
-  # $body_request->push_header( Range => "bytes=0-" . MAX_GET_SIZE );
-
-  $kernel->post( fetcher => request => got_head => $body_request );
+  # Get HEAD from the server.
+  $kernel->post( fetcher => request => got_head => $head_request );
 }
 
 sub check_got_head {
   my ($kernel, $heap) = @_[KERNEL, HEAP];
-  my $request = $_[ARG0]->[0];
+  my $request  = $_[ARG0]->[0];
   my $response = $_[ARG1]->[0];
 
   my $link = $heap->{link};
@@ -142,12 +142,12 @@ sub check_got_head {
     my $base = $response->base;
     $location = URI->new($location, $base)->abs($base);
     $location = uf_uri($location);
- 
+
     return if exists $heap->{loop}->{$location};
- 
+
     my $referral = $request->clone();
     $referral->url($location);
- 
+
     $heap->{redirect} = $location;
     $heap->{loop}->{$location} = 1;
 
@@ -171,7 +171,7 @@ sub check_got_head {
     $size = $response->content_length();
     $size = '(unknown)' unless defined $size;
     link_set_head_size($link, $size);
- 
+
     if (defined $response->title()) {
       link_set_title($link, $response->title());
     }
@@ -183,10 +183,10 @@ sub check_got_head {
     my $url = URI->new( $heap->{redirect} );
     $url = uf_uri($url);
     $body_request->url( $url );
- 
+
     # Limit the request size.
     $body_request->push_header( Range => "bytes=0-" . MAX_GET_SIZE );
- 
+
     $kernel->post( fetcher => request => got_body => $body_request );
   }
 }
