@@ -4,6 +4,7 @@
 clique
         sequence number
         description
+        timestamp
 
 # url, title (from HTML)
 url
@@ -21,8 +22,8 @@ url-data
         content-size
         timestamp
 
-        # do we allow multiple instances of url metadata in the database?
-        unique ?: url.sequence
+        # someday we'll keep historical records of this often volatile data. 
+        # unique: url.sequence
 
 # this way many cliques can share a single link
 link
@@ -46,8 +47,8 @@ rate-link
         user.sequence number
         timestamp
 
-        # do we allow users multiple ratings per link?
-        unique ?: link.sequence + user.sequence
+        # users get one rating per link
+        unique: link.sequence + user.sequence
 
 # things like "not work safe" go here.
 keyword
