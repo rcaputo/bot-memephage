@@ -105,7 +105,7 @@ sub httpd_session_got_query {
 
   if ($url =~ /^\/link\/(\d+)/) {
 
-    my $big_link = get_link($1);
+    my $big_link = get_link_by_id($1);
     if (defined $big_link) {
       #$big_link = url_encode($big_link);
 

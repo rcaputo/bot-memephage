@@ -13,7 +13,7 @@ use PoeConfThing;
 
 use vars qw(@ISA @EXPORT);
 @ISA    = qw(Exporter);
-@EXPORT = qw( get_link_id get_link
+@EXPORT = qw( get_link_id get_link_by_id
 	      get_recent_links get_stale_links get_unchecked_links
 	      get_links_since
               get_link_table_header get_link_as_table_row
@@ -145,7 +145,7 @@ sub get_link_id {
 #------------------------------------------------------------------------------
 # Get a link by its ID.  Creates a link record 
 
-sub get_link {
+sub get_link_by_id {
   my $id = shift;
   return $link_by_id{$id}->[LINK] if exists $link_by_id{$id};
   return undef;

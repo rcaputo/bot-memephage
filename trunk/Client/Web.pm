@@ -283,7 +283,7 @@ POE::Session->new
 
       # Enqueue a check task for each.
       foreach (@pending) {
-        $_[KERNEL]->post( linkchecker => enqueue => 'ignore' => get_link($_) );
+        $_[KERNEL]->post( linkchecker => enqueue => 'ignore' => get_link_by_id($_) );
       }
 
       # Check for stale links again in a little while.
