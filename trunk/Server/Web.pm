@@ -175,7 +175,7 @@ sub httpd_session_got_query {
   if ($url =~ /^\/since(?:\/(\d*))?/) {
     my $oldest_time = $1;
     my $min_time = time() - 3600;
-    $oldest_time = $min_time unless defined $oldest_time;
+    $oldest_time = $min_time unless defined $oldest_time and length $time;
     $oldest_time = $min_time if $oldest_time < $min_time;
 
     my @recent = get_links_since($oldest_time);
