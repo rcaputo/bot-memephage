@@ -521,7 +521,3 @@ sub test_parser_and_exit {
 
 #------------------------------------------------------------------------------
 1;
-
-__END__
-
-AnotherBug whispers, "com needs to learn how to hug!" to you.

@@ -17,8 +17,6 @@ use Util::Conf;
 use Util::Link;
 use Server::Web;
 
-# -><- Nickname adjusting and reclaiming.
-
 #------------------------------------------------------------------------------
 # Spawn the IRC session.
 
