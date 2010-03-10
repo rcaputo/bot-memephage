@@ -1,5 +1,3 @@
-# $Id$
-
 # Rocco's IRC bot stuff.
 
 package Client::IRC;

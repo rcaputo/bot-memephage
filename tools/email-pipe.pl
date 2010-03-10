@@ -1,7 +1,5 @@
 #!perl
 
-# $Id$
-
 # Instructions:
 #   This is a mail filter.  It can be used from .forwards, aliases,
 #   Mail::Audit, and the like.  I hard-coded the IP address; maybe

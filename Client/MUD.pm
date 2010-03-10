@@ -1,5 +1,3 @@
-# $Id$
-
 # Rocco's PerlMud bot stuff.
 
 package Client::MUD;

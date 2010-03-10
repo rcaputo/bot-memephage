@@ -1,5 +1,3 @@
-$Id$
-
 -----
 About
 -----
@@ -91,9 +89,9 @@ Errors
 Support
 -------
 
-Support is through memephage's SourceForge project.  See:
-http://sf.net/projects/memephage/ for task trackers, forums, and other
-tasty morsels.
+http://github.com/rcaputo/bot-memephage
+http://gitorious.org/bot-memephage
+http://sf.net/projects/memephage/
 
 ---
 End

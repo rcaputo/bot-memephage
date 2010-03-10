@@ -1,5 +1,3 @@
-# $Id$
-
 # Manage links.
 
 package Util::Link;

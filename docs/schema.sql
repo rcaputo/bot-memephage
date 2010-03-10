@@ -1,6 +1,4 @@
-/* memephage SQL schema
- *
- * $Id$ */
+/* memephage SQL schema */
 
 CREATE TABLE clique (
 	sequence	SERIAL PRIMARY KEY,

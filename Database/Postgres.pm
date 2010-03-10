@@ -1,5 +1,3 @@
-# $Id$
-
 # Manage the link database (in Postgres).
 #
 # Public interface:

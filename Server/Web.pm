@@ -1,5 +1,3 @@
-# $Id$
-
 # The PerlMud web server portion of our program.
 
 use strict;

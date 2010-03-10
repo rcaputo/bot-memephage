@@ -1,5 +1,3 @@
-# $Id$
-
 # The PerlMud web client portion of our program.
 
 use strict;
